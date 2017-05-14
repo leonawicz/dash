@@ -24,7 +24,7 @@ rcps <- c("4.5"=rcp[2], "6.0"=rcp[3], "8.5"=rcp[4])
 gcms <- c("GFDL-CM3", "GISS-E2-R", "IPSL-CM5A-LR", "MRI-CGCM3", "NCAR-CCSM4")
 cru <- "CRU 4.0"
 
-dataDir <- "appData/clim_2km_seasonal"
+dataDir <- "climdist/appData/clim_2km_seasonal"
 grpDirs <- list.files(dataDir)
 grpDirs <- grpDirs[match(mapsets, grpDirs)]
 locs <- map(grpDirs, ~list.files(file.path(dataDir, .x)))
@@ -52,8 +52,9 @@ locs$`TPA Regions` <- c(
   "Yukon Dept. of Environment"="Government of Yukon, Department of Environment"
 )
 
-objs <- c('locs', 'mapsets', 'rcps', 'gcms', 'cru', 'period', 'variables', 'seasons', 'stats')
-save(list=objs, file="appData/appData.RData") # general data
+mapset_colIDs <- c("NAME", "COMMONER", "LEVEL_2", "LEVEL_3", "LCC_Name", "LCC_Name", "Name", "REGION", "MGT_AGENCY")
+objs <- c('locs', 'mapsets', 'rcps', 'gcms', 'cru', 'period', 'variables', 'seasons', 'stats', 'mapset_colIDs')
+save(list=objs, file="climdist/appData/appData.RData") # general data
 
 # Shapefiles
 library(rgdal)
@@ -84,6 +85,9 @@ CAVM_shp <- readOGR(file.path(shpDir, "CAVM/CAVM_complete.shp"), verbose=FALSE) 
 FMZ_shp <- readOGR(file.path(shpDir, "FireMgmtZones/FireManagementZones_simplified.shp"), verbose=FALSE) %>% spTransform(proj4)
 # Terrestrail Protected Areas
 TPA_shp <- readOGR(file.path(shpDir, "NA_TPA/NA_TPA_simplified.shp"), verbose=FALSE) %>% spTransform(proj4)
+
+#shp.list <- list(Canada_shp, eco32_shp, eco9_shp, eco3_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp)
+#locs_areas <- map(seq_along(locs), ~shp.list[[.x]]@data$Shape_Area) # not implemented yet
 
 walk2(mapsets, list(Canada_shp, eco3_shp, eco9_shp, eco32_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp),
       ~saveRDS(.y, file=paste0("appData/shp/", .x, ".rds")))
