@@ -12,9 +12,8 @@ function(request){
     dashboardSidebar(
       useToastr(),
       introjsUI(),
-      #tags$style(HTML(".myijs { min-width: 800px; max-width: 800px; }")),
       selectInput("mapset", "Change map layer", choices=mapsets, selected=mapsets[8], width="100%"),
-      actionButton("btn_staticmap", "Detailed map", style=action_btn_style, icon("globe")),
+      actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
         id="tabs",
         menuItem("Climate", icon=icon("sliders"), tabName="climate"),
@@ -48,9 +47,6 @@ function(request){
     ),
     dashboardBody(
       includeCSS("www/styles.css"),
-      bsModal("staticmap", "Fire Management Zones", "btn_staticmap", size="large",
-        img(src='Fire_Mgmt_Areas.png', align="center", style="width: 100%")
-      ),
       tabItems(
         tabItem(tabName="climate",
               box(

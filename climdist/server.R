@@ -15,6 +15,10 @@ shinyServer(function(input, output, session) {
     file.path(dataloc, "shp", paste0(input$mapset, ".rds"))
   })
   
+  mapset_reg_id <- reactive({
+    mapset_colIDs[match(input$mapset, mapsets)]
+  })
+  
   rv <- reactiveValues(d=NULL, current_files=NULL, load_new_files=TRUE, 
           regions=regions_list_default, shp=readRDS(file.path(dataloc, "shp/FMZ Regions.rds")))
   
@@ -82,14 +86,20 @@ shinyServer(function(input, output, session) {
     on.exit(progress$close())
     progress$set(message="Generating zone map", value=0)
     akcan <- input$mapset==default_mapset
-    z <- if(akcan) "Alaska and western Canada" else rv$shp$REGION
+    if(akcan){
+      z <- "Alaska and western Canada"
+      z.id <- z
+    } else {
+      z <- rv$shp[[mapset_reg_id()]]
+      z.id <- z #locs[[input$mapset]][match(z, locs2[[input$mapset]])] # not implemented yet
+    }
     n <- 1 + length(z)
     x <- leaflet() %>% addTiles() %>% setView(lon, lat, 4)
     progress$inc(1/n, detail="Basemap built")
     # Add background polygon region outlines after map is created
     if(!akcan){
       for(i in seq_along(z)){
-        x <- x %>% addPolygons(data=subset(rv$shp, REGION==z[i]), stroke=TRUE, fillOpacity=0, weight=1,
+        x <- x %>% addPolygons(data=rv$shp[rv$shp[[mapset_reg_id()]]==z[i],], stroke=TRUE, fillOpacity=0, weight=1,
           color="black", group="not_selected", layerId=z[i], label=names(rv$regions)[i],
           highlightOptions=highlightOptions(opacity=1, weight=2, fillOpacity=0, 
             bringToFront=FALSE, sendToBack=FALSE))
