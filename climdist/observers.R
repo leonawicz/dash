@@ -1,4 +1,12 @@
 # Modal-based inputs
+observeEvent(input$staticmap_btn, {
+  showModal(modalDialog(
+    title=names(mapsets)[match(input$mapset, mapsets)], footer=NULL,
+    img(src='Fire_Mgmt_Areas.png', align="center", style="width: 100%"),
+    size="l", easyClose=TRUE
+  ))
+})
+
 observeEvent(input$settings_btn, {
   showModal(modalDialog(
     fluidRow(
@@ -12,7 +20,7 @@ observeEvent(input$settings_btn, {
       ),
       column(4, checkboxInput("include_cru", "Include CRU 4.0 data", FALSE, width="100%"))
     ),
-    size="l", easyClose=TRUE
+    footer=NULL, size="l", easyClose=TRUE
   ))
 })
 
@@ -25,7 +33,7 @@ observeEvent(input$regions, {
   not_selected <- setdiff(rv$regions, x)
   if(length(not_selected)) walk(not_selected, ~proxy %>% removeShape(layerId=paste0("selected_", .x)))
   walk(x, ~proxy %>%
-    addPolygons(data=subset(rv$shp, REGION==.x),
+    addPolygons(data=rv$shp[rv$shp[[mapset_reg_id()]]==.x,],
       stroke=TRUE, fillOpacity=0.2, weight=1, group="selected", layerId=paste0("selected_", .x)))
   }
 }, ignoreNULL=FALSE)
@@ -41,7 +49,7 @@ observeEvent(input$Map_shape_click, {
     if(substr(p, 1, 9)=="selected_"){
       proxy %>% removeShape(layerId=p)
     } else {
-      proxy %>% addPolygons(data=subset(rv$shp, REGION==p), stroke=TRUE, fillOpacity=0.2, weight=1,
+      proxy %>% addPolygons(data=rv$shp[rv$shp[[mapset_reg_id()]]==p,], stroke=TRUE, fillOpacity=0.2, weight=1,
                             group="selected", layerId=paste0("selected_", p))
     }
     
