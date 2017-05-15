@@ -116,6 +116,7 @@ function(request){
                                actionButton("go_btn", "Build distributions", class="btn-block", icon("globe"))
                              )
                            ),
+                           column(4, ""),
                            column(4,
                              actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear"))
                            )

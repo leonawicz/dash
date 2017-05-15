@@ -188,7 +188,7 @@ shinyServer(function(input, output, session) {
   clrby <- reactive({ if(input$clrby=="") NULL else input$clrby })
   colorvec <- reactive({ if(is.null(clrby())) NULL else tolpal(length(unique(d()[[clrby()]]))) })
   preventPlot <- reactive({ is.null(d()) || nrow(d())==0 })
-  plotHeight <- reactive({ if(preventPlot()) 0 else 300 })
+  plotHeight <- reactive({ if(preventPlot()) 0 else 400 })
   plotInteraction <- reactive({ interact(names(d())) })
   
   primeAxis <- reactive({
