@@ -11,6 +11,9 @@ rcp.min.yr <- 2006
 
 shinyServer(function(input, output, session) {
   
+  source("observers.R", local=TRUE) # map and region selectInput observers
+  source("tour.R", local=TRUE) # introjs tour
+  
   mapset_workspace <- reactive({ 
     file.path(dataloc, "shp", paste0(input$mapset, ".rds"))
   })
@@ -19,7 +22,7 @@ shinyServer(function(input, output, session) {
     mapset_colIDs[match(input$mapset, mapsets)]
   })
   
-  rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, 
+  rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, cru=NULL,
           regions=regions_list_default, shp=readRDS(file.path(dataloc, "shp/FMZ Regions.rds")))
   
   load_map_file <- function(file, source="local"){
@@ -38,20 +41,6 @@ shinyServer(function(input, output, session) {
     rv[["regions"]] <- locs[[input$mapset]]
     rv[["shp"]] <- shp
   }
-  
-  observeEvent(input$mapset, {
-    local_cache <- paste0("mapset_data_", input$mapset)
-    if(is.null(mapset_workspace())){
-      rv[["regions"]] <- regions_list_default
-      rv[["shp"]] <- readRDS(file.path(dataloc, "shp/FMZ Regions.rds"))
-    } else if(exists(local_cache, envir=.GlobalEnv)){
-      rv[["regions"]] <- get(local_cache, envir=.GlobalEnv)$regions
-      rv[["shp"]] <- get(local_cache, envir=.GlobalEnv)$shp
-    } else {
-      load_map_file(mapset_workspace(), source=data_source)
-      assign(local_cache, list(regions=rv$regions, shp=rv$shp), envir=.GlobalEnv)
-    }
-  })
 
   mapset_labs <- reactive({ names(mapsets)[match(input$mapset, mapsets)] })
   
@@ -70,9 +59,6 @@ shinyServer(function(input, output, session) {
     if(is.null(input$regions)) return(regions_selected_default)
     input$regions
   })
-  
-  source("observers.R", local=TRUE) # map and region selectInput observers
-  source("tour.R", local=TRUE) # introjs tour
   
   alpha_den <- reactive({ if(is.null(input$alpha_den)) 1 else input$alpha_den })
   alpha_ts <- reactive({ if(is.null(input$alpha_ts)) 0.1 else input$alpha_ts })
@@ -116,9 +102,12 @@ shinyServer(function(input, output, session) {
   outputOptions(output ,"Map", suspendWhenHidden=FALSE)
   
   metric <- reactive({ is.null(input$metric) || input$metric=="Metric" })
-  i <- reactive({ list(rcps=input$rcps, gcms=input$gcms, reg=input$regions,
-                       seasons=input$seasons, yrs=input$yrs,
-                       reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
+  i <- reactive({
+    cur_gcms <- input$gcms
+    if(!is.null(input$cru) && input$cru) cur_gcms <- c("CRU 4.0", cur_gcms)
+    list(rcps=input$rcps, gcms=cur_gcms, 
+      reg=input$regions, seasons=input$seasons, yrs=input$yrs,
+      reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
   })
   
   files <- reactive({
@@ -126,45 +115,10 @@ shinyServer(function(input, output, session) {
     models <- if(!is.null(input$cru) && input$cru && input$yrs[1] <= cru.max.yr)
       c("ts40", input$gcms) else input$gcms
     files <- expand.grid(input$variable, rcps_string, input$gcms, input$seasons, stringsAsFactors=FALSE)
-    if("ts40" %in% models || input$yrs[1] < rcp.min.yr) 
+    if(xor("ts40" %in% models, input$yrs[1] < rcp.min.yr)) 
       files <- rbind(expand.grid(input$variable, "historical", models, input$seasons, stringsAsFactors=FALSE), files)
     files <- files[!(files[, 3]=="ts40" & files[, 1] %in% c("tasmin", "tasmax")),] # temporarily missing files
     cbind(files, paste0(files[,1], "_", files[,2], "_", files[,3], "_", files[,4], ".rds"))
-  })
-  
-  observeEvent(input$go_btn, {
-    if(input$go_btn==0) return()
-    load_files <- function(path, files){
-      map(1:nrow(files), ~readRDS(file.path(path, files[.x, 5])) %>% 
-            mutate(RCP=factor(switch(files[.x, 2], 
-                                     historical="Historical", 
-                                     rcp45="RCP 4.5", 
-                                     rcp60="RCP 6.0", 
-                                     rcp85="RCP 8.5"), levels=c("Historical", rcps)),
-                   GCM=factor(ifelse(files[.x, 3]=="ts40", cru, files[.x, 3]), levels=c(cru, gcms)),
-                   Region=factor(basename(path), levels=rv$regions),
-                   Var=factor(files[.x, 1], levels=variables),
-                   Season=factor(files[.x, 4], levels=seasons)) %>%
-            select(RCP, GCM, Region, Var, Season, Year, Val, Prob)) %>% bind_rows %>% rvtable
-    }
-    print(files())
-    if(identical(files(), rv$current_files) & identical(regions_selected(), rv$current_regions)){
-      rv$load_new_files <- FALSE
-    } else {
-      rv$current_files <- files()
-      rv$current_regions <- regions_selected()
-      rv$load_new_files <- TRUE
-    }
-    if(rv$load_new_files){
-      region_paths <- file.path(dataloc, "clim_2km_seasonal", input$mapset, regions_selected())
-      progress <- shiny::Progress$new()
-      on.exit(progress$close())
-      progress$set(1, message="Loading data...", detail=NULL)
-      rv$d <- map(region_paths, ~load_files(.x, files())) %>% bind_rows  %>% droplevels
-      rv$current_files <- files()
-      rv$current_regions <- regions_selected()
-      rv$load_new_files <- FALSE
-    }
   })
   
   noData <- reactive({ any(sapply(i(), is.null)) || is.null(rv$d) })
@@ -174,12 +128,12 @@ shinyServer(function(input, output, session) {
     isolate({
       if(is.null(rv$d)) return()
       withProgress({
-        dots <- c("RCP", "GCM", "Region", "Var", "Season", "Year", "Val", "Prob")
+        dots <- c("RCP", "Model", "Region", "Var", "Season", "Year", "Val", "Prob")
         if(noData()){
           x <- slice(rv$d, 0)
         } else {
           getSubset <- function(x) filter(x, 
-            RCP %in% c("Historical", i()[[1]]) & GCM %in% c(cru, i()[[2]]) &
+            RCP %in% c("Historical", i()[[1]]) & Model %in% c(cru, i()[[2]]) &
               Region %in% i()[[3]] & Season %in% i()[[4]] &
               Year >= i()[[5]][1] & Year <= i()[[5]][2]) %>%
             select_(.dots=dots)
@@ -202,7 +156,6 @@ shinyServer(function(input, output, session) {
         m <- m[map_int(m.lev, ~length(.x) > 1)]
         if(!length(m)) m <- NULL
       }
-      
       d.args <- if(input$variable=="Precipitation") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
       s.args <- list(n=1000)
       progress <- shiny::Progress$new()

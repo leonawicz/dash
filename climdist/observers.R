@@ -7,24 +7,22 @@ observeEvent(input$staticmap_btn, {
   ))
 })
 
-observeEvent(input$settings_btn, {
-  showModal(modalDialog(
-    fluidRow(
-      column(4,
-        selectInput("metric", "Units", c("US", "Metric"), width="100%"),
-        selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%")
-      ),
-      column(4,
-        sliderInput("alpha_den", "Density transparency", 0.1, 1, 1, 0.1, sep="", width="100%"),
-        sliderInput("alpha_ts", "Series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%")
-      ),
-      column(4, checkboxInput("include_cru", "Include CRU 4.0 data", FALSE, width="100%"))
-    ),
-    footer=NULL, size="l", easyClose=TRUE
-  ))
+# Map-related observers
+# Observe selected mapset for regions list and shapefile reactive values
+observeEvent(input$mapset, {
+  local_cache <- paste0("mapset_data_", input$mapset)
+  if(is.null(mapset_workspace())){
+    rv[["regions"]] <- regions_list_default
+    rv[["shp"]] <- readRDS(file.path(dataloc, "shp/FMZ Regions.rds"))
+  } else if(exists(local_cache, envir=.GlobalEnv)){
+    rv[["regions"]] <- get(local_cache, envir=.GlobalEnv)$regions
+    rv[["shp"]] <- get(local_cache, envir=.GlobalEnv)$shp
+  } else {
+    load_map_file(mapset_workspace(), source=data_source)
+    assign(local_cache, list(regions=rv$regions, shp=rv$shp), envir=.GlobalEnv)
+  }
 })
 
-# Map-related observers
 # observe region selectInput and update map polygons
 observeEvent(input$regions, {
   x <- input$regions
@@ -82,4 +80,42 @@ observe({
       toastr_error(title="Empty data set", x, timeOut=2500, preventDuplicates=TRUE)
     }
   })
+})
+
+# Observe button click for loading data
+observeEvent(input$go_btn, {
+  if(input$go_btn==0) return()
+  load_files <- function(path, files){
+    map(1:nrow(files), ~readRDS(file.path(path, files[.x, 5])) %>% 
+          mutate(RCP=factor(switch(files[.x, 2], 
+                                   historical="Historical", 
+                                   rcp45="RCP 4.5", 
+                                   rcp60="RCP 6.0", 
+                                   rcp85="RCP 8.5"), levels=c("Historical", rcps)),
+                 Model=factor(ifelse(files[.x, 3]=="ts40", cru, files[.x, 3]), levels=c(cru, gcms)),
+                 Region=factor(basename(path), levels=rv$regions),
+                 Var=factor(files[.x, 1], levels=variables),
+                 Season=factor(files[.x, 4], levels=seasons)) %>%
+          select(RCP, Model, Region, Var, Season, Year, Val, Prob)) %>% bind_rows %>% rvtable
+  }
+  if(identical(files(), rv$current_files) & 
+     identical(regions_selected(), rv$current_regions) & identical(input$cru, rv$cru)){
+    rv$load_new_files <- FALSE
+  } else {
+    rv$current_files <- files()
+    rv$current_regions <- regions_selected()
+    rv$cru <- input$cru
+    rv$load_new_files <- TRUE
+  }
+  if(rv$load_new_files){
+    region_paths <- file.path(dataloc, "clim_2km_seasonal", input$mapset, regions_selected())
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(1, message="Loading data...", detail=NULL)
+    rv$d <- map(region_paths, ~load_files(.x, files())) %>% bind_rows  %>% droplevels
+    rv$current_files <- files()
+    rv$current_regions <- regions_selected()
+    rv$cru <- input$cru
+    rv$load_new_files <- FALSE
+  }
 })

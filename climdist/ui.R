@@ -49,6 +49,19 @@ function(request){
       includeCSS("www/styles.css"),
       tabItems(
         tabItem(tabName="climate",
+              bsModal("settings", "Plot settings", "settings_btn", size="large",
+                fluidRow(
+                  column(4,
+                    selectInput("metric", "Units", c("US", "Metric"), width="100%"),
+                    selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%")
+                  ),
+                  column(4,
+                    sliderInput("alpha_den", "Density transparency", 0.1, 1, 1, 0.1, sep="", width="100%"),
+                    sliderInput("alpha_ts", "Series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%")
+                  ),
+                  column(4, checkboxInput("cru", "Include CRU 4.0 data", FALSE, width="100%"))
+                )
+              ),
               box(
                 fluidRow(
                   column(5,
@@ -88,18 +101,20 @@ function(request){
                          fluidRow(
                              column(4,
                                selectInput("marginalize", "Merge distributions across", 
-                                 choices=c("", "RCPs"="RCP", "GCMs"="GCM"), selected="", multiple=TRUE, width="100%")
+                                 choices=c("", "RCPs"="RCP", "Models"="GCM"), selected="", multiple=TRUE, width="100%")
                              ),
                              column(4,
-                               selectInput("clrby", "Color by", choices=c("", "RCP", "GCM", "Season", "Region"), selected="", width="100%")
+                               selectInput("clrby", "Color by", choices=c("", "RCP", "Model", "Season", "Region"), selected="", width="100%")
                              ),
                              column(4,
-                               selectInput("fctby", "Facet by", choices=c("", "RCP", "GCM", "Season", "Region"), selected="", width="100%")
+                               selectInput("fctby", "Facet by", choices=c("", "RCP", "Model", "Season", "Region"), selected="", width="100%")
                              )
                          ),
                          fluidRow(
                            column(4, 
-                             actionButton("go_btn", "Build distributions", class="btn-block", icon("globe"))
+                             conditionalPanel(valid_input_selection,
+                               actionButton("go_btn", "Build distributions", class="btn-block", icon("globe"))
+                             )
                            ),
                            column(4,
                              actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear"))

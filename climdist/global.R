@@ -26,6 +26,9 @@ print(proc.time() - ptm)
 ptm <- proc.time()
 action_btn_style <- "color: black; margin: 10px 15px 10px 15px; width: 200px;"
 axis_scales <- c("Fixed"="fixed", "Free"="free", "Free X"="free_x", "Free Y"="free_y")
+valid_input_selection <- paste(
+  paste(paste0("input.", c("regions", "rcps", "seasons")), "!= null", collapse=" & "), 
+  " & (input.gcms != null || input.cru ==true)")
 
 source("override.R")
 source("utils.R")
