@@ -19,7 +19,7 @@ shinyServer(function(input, output, session) {
     mapset_colIDs[match(input$mapset, mapsets)]
   })
   
-  rv <- reactiveValues(d=NULL, current_files=NULL, load_new_files=TRUE, 
+  rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, 
           regions=regions_list_default, shp=readRDS(file.path(dataloc, "shp/FMZ Regions.rds")))
   
   load_map_file <- function(file, source="local"){
@@ -90,8 +90,10 @@ shinyServer(function(input, output, session) {
       z <- "Alaska and western Canada"
       z.id <- z
     } else {
-      z <- rv$shp[[mapset_reg_id()]]
-      z.id <- z #locs[[input$mapset]][match(z, locs2[[input$mapset]])] # not implemented yet
+      z <- as.character(rv$shp[[mapset_reg_id()]])
+      idx <- match(z, locs2[[input$mapset]])
+      z.id <- as.character(rv$regions[idx])
+      z.lab <- names(rv$regions[idx])
     }
     n <- 1 + length(z)
     x <- leaflet() %>% addTiles() %>% setView(lon, lat, 4)
@@ -100,7 +102,7 @@ shinyServer(function(input, output, session) {
     if(!akcan){
       for(i in seq_along(z)){
         x <- x %>% addPolygons(data=rv$shp[rv$shp[[mapset_reg_id()]]==z[i],], stroke=TRUE, fillOpacity=0, weight=1,
-          color="black", group="not_selected", layerId=z[i], label=names(rv$regions)[i],
+          color="black", group="not_selected", layerId=z.id[i], label=z.lab[i],
           highlightOptions=highlightOptions(opacity=1, weight=2, fillOpacity=0, 
             bringToFront=FALSE, sendToBack=FALSE))
         progress$inc((i+1)/n, detail=paste("Adding polygon", i))
@@ -145,10 +147,12 @@ shinyServer(function(input, output, session) {
                    Season=factor(files[.x, 4], levels=seasons)) %>%
             select(RCP, GCM, Region, Var, Season, Year, Val, Prob)) %>% bind_rows %>% rvtable
     }
-    if(identical(files(), rv$current_files)){
+    print(files())
+    if(identical(files(), rv$current_files) & identical(regions_selected(), rv$current_regions)){
       rv$load_new_files <- FALSE
     } else {
       rv$current_files <- files()
+      rv$current_regions <- regions_selected()
       rv$load_new_files <- TRUE
     }
     if(rv$load_new_files){
@@ -158,6 +162,7 @@ shinyServer(function(input, output, session) {
       progress$set(1, message="Loading data...", detail=NULL)
       rv$d <- map(region_paths, ~load_files(.x, files())) %>% bind_rows  %>% droplevels
       rv$current_files <- files()
+      rv$current_regions <- regions_selected()
       rv$load_new_files <- FALSE
     }
   })
@@ -167,9 +172,6 @@ shinyServer(function(input, output, session) {
   d_sub <- reactive({
     input$go_btn
     isolate({
-      print(rv$d)
-      print(rv$current_files)
-      print(rv$load_new_files)
       if(is.null(rv$d)) return()
       withProgress({
         dots <- c("RCP", "GCM", "Region", "Var", "Season", "Year", "Val", "Prob")
