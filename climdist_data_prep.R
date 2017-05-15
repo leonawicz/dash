@@ -44,17 +44,13 @@ locs$`FMZ Regions` <- c("Chugach N.F."="CGF", "Copper River"="CRS", "Delta"="DAS
 locs$`TPA Regions` <- c(
   "Alaska DNR"="State Department of Natural Resources",
   "BLM"="Bureau of Land Management (BLM)",
-  "DOD/DOE"="DOD and DOE",
+  "DOD/DOE"="Department of Defense (DOD) and Department of Energy",
   "FWS"="Fish and Wildlife Service (FWS)",
   "NPS"="National Park Service (NPS)",
   "Govt. of BC"="Government of British Columbia",
   "Parks Canada Agency"="Government of Canada, Parks Canada Agency",
   "Yukon Dept. of Environment"="Government of Yukon, Department of Environment"
 )
-
-mapset_colIDs <- c("NAME", "COMMONER", "LEVEL_2", "LEVEL_3", "LCC_Name", "LCC_Name", "Name", "REGION", "MGT_AGENCY")
-objs <- c('locs', 'mapsets', 'rcps', 'gcms', 'cru', 'period', 'variables', 'seasons', 'stats', 'mapset_colIDs')
-save(list=objs, file="climdist/appData/appData.RData") # general data
 
 # Shapefiles
 library(rgdal)
@@ -91,3 +87,11 @@ TPA_shp <- readOGR(file.path(shpDir, "NA_TPA/NA_TPA_simplified.shp"), verbose=FA
 
 walk2(mapsets, list(Canada_shp, eco3_shp, eco9_shp, eco32_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp),
       ~saveRDS(.y, file=paste0("appData/shp/", .x, ".rds")))
+
+locs2 <- locs
+locs2$`LCC Regions` <- levels(LCC_shp$LCC_Name)[c(1,2,4,3,5)]
+locs2$`TPA Regions` <- levels(TPA_shp$MGT_AGENCY)[c(8,1,2,3,7,4,5,6)]
+
+mapset_colIDs <- c("NAME", "COMMONER", "LEVEL_2", "LEVEL_3", "LCC_Name", "LCC_Name", "Name", "REGION", "MGT_AGENCY")
+objs <- c('locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 'period', 'variables', 'seasons', 'stats', 'mapset_colIDs')
+save(list=objs, file="climdist/appData/appData.RData") # general data
