@@ -133,7 +133,6 @@ shinyServer(function(input, output, session) {
       if(is.null(rv$d)) return()
       withProgress({
         dots <- c("RCP", "Model", "Region", "Var", "Season", "Year", "Val", "Prob")
-        print(i())
         if(noData()){
           x <- slice(rv$d, 0)
         } else {
@@ -165,19 +164,31 @@ shinyServer(function(input, output, session) {
       s.args <- list(n=1000)
       progress <- shiny::Progress$new()
       on.exit(progress$close())
-      x <- d_sub() %>% rvtable
-      step <- 1
+      x <- d_sub() %>% split(.$Year) %>% map(~rvtable(.x))
+      n.steps <- length(x)
+      step <- 0
       if(!is.null(m) && !"" %in% m){
         msg <- "Integrating variables..."
+        progress$set(0, msg, detail=NULL)
+        n.steps.marginal <- if(length(m)) n.steps*length(m) else n.steps
         for(i in seq_along(m)){
-          step <- step + i
-          detail <- paste0("Marginalizing over ", m[i], "s")
-          progress$set(step, msg, detail)
-          x <- marginalize(x, m[i], density.args=d.args, sample.args=s.args)
+          for(j in seq_along(x)){
+            step <- step + 1
+            detail <- paste0("Marginalizing over ", m[i], "s: ", round(100*step/n.steps.marginal), "%")
+            progress$inc(1/n.steps.marginal, msg, detail)
+            x[[j]] <- marginalize(x[[j]], m[i], density.args=d.args, sample.args=s.args)
+          }
         }
-      } else step <- 0
-      progress$set(step + 1, message="Sampling distributions...", detail=NULL)
-      x <- sample_rvtable(x, n=10)
+      }
+      step <- 0
+      msg <- "Sampling distributions..."
+      progress$set(0, message=msg, detail=NULL)
+      for(j in seq_along(x)){
+        step <- step + 1
+        progress$inc(1/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
+        x[[j]] <- sample_rvtable(x[[j]], n=10)
+      }
+      x <- bind_rows(x)
       if(nrow(x) > 0){
         if(metric()){
           x <- mutate(x, Val=ifelse(Var=="pr", round(Val), round(Val, 1)))

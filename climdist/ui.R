@@ -105,7 +105,7 @@ function(request){
                          fluidRow(
                              column(4,
                                selectInput("marginalize", "Merge distributions across", 
-                                 choices=c("", "RCPs"="RCP", "Models"="GCM"), selected="", multiple=TRUE, width="100%")
+                                 choices=c("", "RCPs"="RCP", "Models"="Model"), selected="", multiple=TRUE, width="100%")
                              ),
                              column(4,
                                selectInput("clrby", "Color by", choices=c("", "RCP", "Model", "Season", "Region"), selected="", width="100%")
