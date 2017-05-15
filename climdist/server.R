@@ -62,6 +62,7 @@ shinyServer(function(input, output, session) {
   
   alpha_den <- reactive({ if(is.null(input$alpha_den)) 1 else input$alpha_den })
   alpha_ts <- reactive({ if(is.null(input$alpha_ts)) 0.1 else input$alpha_ts })
+  alpha_dec <- reactive({ if(is.null(input$alpha_dec)) 0.1 else input$alpha_dec })
   facet_scales <- reactive({ if(is.null(input$facet_scales)) "fixed" else input$facet_scales })
   
   # Initialize map and add polygons
@@ -115,8 +116,11 @@ shinyServer(function(input, output, session) {
     models <- if(!is.null(input$cru) && input$cru && input$yrs[1] <= cru.max.yr)
       c("ts40", input$gcms) else input$gcms
     files <- expand.grid(input$variable, rcps_string, input$gcms, input$seasons, stringsAsFactors=FALSE)
-    if(xor("ts40" %in% models, input$yrs[1] < rcp.min.yr)) 
+    if("ts40" %in% models & input$yrs[1] >= rcp.min.yr){
+      files <- rbind(expand.grid(input$variable, "historical", "ts40", input$seasons, stringsAsFactors=FALSE), files)
+    } else if(input$yrs[1] < rcp.min.yr){ 
       files <- rbind(expand.grid(input$variable, "historical", models, input$seasons, stringsAsFactors=FALSE), files)
+    }
     files <- files[!(files[, 3]=="ts40" & files[, 1] %in% c("tasmin", "tasmax")),] # temporarily missing files
     cbind(files, paste0(files[,1], "_", files[,2], "_", files[,3], "_", files[,4], ".rds"))
   })
@@ -129,6 +133,7 @@ shinyServer(function(input, output, session) {
       if(is.null(rv$d)) return()
       withProgress({
         dots <- c("RCP", "Model", "Region", "Var", "Season", "Year", "Val", "Prob")
+        print(i())
         if(noData()){
           x <- slice(rv$d, 0)
         } else {
@@ -172,7 +177,7 @@ shinyServer(function(input, output, session) {
         }
       } else step <- 0
       progress$set(step + 1, message="Sampling distributions...", detail=NULL)
-      x <- sample_rvtable(x, n=100)
+      x <- sample_rvtable(x, n=10)
       if(nrow(x) > 0){
         if(metric()){
           x <- mutate(x, Val=ifelse(Var=="pr", round(Val), round(Val, 1)))
@@ -189,7 +194,6 @@ shinyServer(function(input, output, session) {
   colorvec <- reactive({ if(is.null(clrby())) NULL else tolpal(length(unique(d()[[clrby()]]))) })
   preventPlot <- reactive({ is.null(d()) || nrow(d())==0 })
   plotHeight <- reactive({ if(preventPlot()) 0 else 400 })
-  plotInteraction <- reactive({ interact(names(d())) })
   
   primeAxis <- reactive({
     v <- names(variables)[match(input$variable, variables)]
@@ -204,19 +208,28 @@ shinyServer(function(input, output, session) {
   plot_dist <- reactive({
     input$go_btn
     isolate({
-      distPlot(d(), input$variable, primeAxis(), clrby(), colorvec(), alpha_den(), 
-        input$fctby, facet_scales(), yrs(), plotInteraction(), "density", preventPlot()) 
+      distPlot(d(), primeAxis(), clrby(), colorvec(), alpha_den(), 
+        input$fctby, facet_scales(), yrs(), "density", preventPlot()) 
     })
   })
   plot_ts <- reactive({
     input$go_btn
     isolate({
-      tsPlot(d(), input$variable, primeAxis(), clrby(), colorvec(), alpha_ts(), 
+      tsPlot(d(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
         input$fctby, facet_scales(), preventPlot())
+    })
+  })
+  plot_dec <- reactive({
+    input$go_btn
+    isolate({
+      decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
+             input$fctby, facet_scales(), input$bptype, preventPlot())
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())
   output$ts_plot <- renderPlot({ plot_ts() }, height=function() plotHeight())
+  output$dec_plot <- renderPlot({ plot_dec() }, height=function() plotHeight())
   outputOptions(output, "dist_plot", suspendWhenHidden=FALSE)
   outputOptions(output, "ts_plot", suspendWhenHidden=FALSE)
+  outputOptions(output, "dec_plot", suspendWhenHidden=FALSE)
 })

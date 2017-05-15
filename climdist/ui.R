@@ -52,14 +52,18 @@ function(request){
               bsModal("settings", "Plot settings", "settings_btn", size="large",
                 fluidRow(
                   column(4,
-                    selectInput("metric", "Units", c("US", "Metric"), width="100%"),
-                    selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%")
+                    sliderInput("alpha_den", "Period density transparency", 0.1, 1, 1, 0.1, sep="", width="100%"),
+                    selectInput("metric", "Units", c("Metric", "US"), width="100%"),
+                    checkboxInput("cru", "Include CRU 4.0 data", FALSE, width="100%")
                   ),
                   column(4,
-                    sliderInput("alpha_den", "Density transparency", 0.1, 1, 1, 0.1, sep="", width="100%"),
-                    sliderInput("alpha_ts", "Series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%")
+                    sliderInput("alpha_ts", "Annual series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%"),
+                    selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%")
                   ),
-                  column(4, checkboxInput("cru", "Include CRU 4.0 data", FALSE, width="100%"))
+                  column(4, 
+                    sliderInput("alpha_dec", "Decadal series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%"),
+                    selectInput("bptype", "Decadal distributions", c("Box plot", "Strip chart", "Overlay"), width="100%")
+                  )
                 )
               ),
               box(
@@ -131,6 +135,11 @@ function(request){
                 ),
                 column(7,
                   plotOutput("ts_plot", height="auto")
+                )
+              ),
+              fluidRow(
+                column(12,
+                  plotOutput("dec_plot", height="auto")
                 )
               )
         ),
