@@ -12,7 +12,7 @@ function(request){
     dashboardSidebar(
       useToastr(),
       introjsUI(),
-      selectInput("mapset", "Change map layer", choices=mapsets, selected=mapsets[8], width="100%"),
+      selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
       actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
         id="tabs",
