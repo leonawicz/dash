@@ -3,22 +3,24 @@ library(purrr)
 library(aws.s3)
 
 # setup
-source("aws_key.R")
+source("climdist/aws_key.R")
 bkt <- "leonawicz"
 
 period <- c(1860, 2099)
 variables <- c("Precipitation"="pr", "Mean temperature"="tas", "Min Temperature"="tasmin", "Max temperature"="tasmax")
 seasons <- c("Annual"="annual", "Winter"="winter", "Spring"="spring", "Summer"="summer", "Autumn"="autumn")
 stats <- c("Mean")
-mapsets <- c("State/Province"="Political Boundaries",
-             "Alaska level 1 ecoregions"="Alaska L1 Ecoregions",
-             "Alaska level 2 ecoregions"="Alaska L2 Ecoregions",
-             "Alaska level 3 ecoregions"="Alaska L3 Ecoregions",
-             "Alaska LCC regions"="LCC Regions",
-             "Alaska/Canada LCC regions"="AK-CAN LCC",
-             "CAVM regions"="CAVM Regions",
-             "Fire management zones"="FMZ Regions",
-             "Terrestrial protected areas"="TPA Regions")
+mapsets <- c(
+  "Alaska/western Canada"="AK-CAN",
+  "State/Province"="Political Boundaries",
+  "Alaska level 1 ecoregions"="Alaska L1 Ecoregions",
+  "Alaska level 2 ecoregions"="Alaska L2 Ecoregions",
+  "Alaska level 3 ecoregions"="Alaska L3 Ecoregions",
+  "Alaska LCC regions"="LCC Regions",
+  "Alaska/Canada LCC regions"="AK-CAN LCC",
+  "CAVM regions"="CAVM Regions",
+  "Fire management zones"="FMZ Regions",
+  "Terrestrial protected areas"="TPA Regions")
 rcp <- c("Historical", "RCP 4.5", "RCP 6.0", "RCP 8.5")
 rcps <- c("4.5"=rcp[2], "6.0"=rcp[3], "8.5"=rcp[4])
 gcms <- c("GFDL-CM3", "GISS-E2-R", "IPSL-CM5A-LR", "MRI-CGCM3", "NCAR-CCSM4")
@@ -30,11 +32,12 @@ grpDirs <- grpDirs[match(mapsets, grpDirs)]
 locs <- map(grpDirs, ~list.files(file.path(dataDir, .x)))
 names(locs) <- mapsets
 
-names(locs$`Political Boundaries`) <- c("Alaska and western Canada", locs$`Political Boundaries`[2:7])
+names(locs$`Political Boundaries`) <- locs$`Political Boundaries`
 names(locs$`Alaska L1 Ecoregions`) <- locs$`Alaska L1 Ecoregions`
 names(locs$`Alaska L2 Ecoregions`) <- locs$`Alaska L2 Ecoregions`
 names(locs$`Alaska L3 Ecoregions`) <- locs$`Alaska L3 Ecoregions`
 names(locs$`CAVM Regions`) <- locs$`CAVM Regions`
+locs$`AK-CAN` <- c("Alaska/western Canada"="AK-CAN")
 locs$`LCC Regions` <- c("Arctic"="Arctic", "North Pacific"="N Pacific", "NW interior boreal (north)"="NW Interior Forest N",
                         "NW interior boreal (south)"="NW Interior Forest S", "Western Alaska"="W Alaska")
 locs$`AK-CAN LCC` <- c("Northwest boreal"="AK-CAN NW Boreal LCC")
@@ -55,26 +58,24 @@ locs$`TPA Regions` <- c(
 # Shapefiles
 library(rgdal)
 library(maptools)
-shpDir <- "C:/github/DataExtraction/data/shapefiles"
+shpDir <- "LowResFlatShapefiles" #"C:/github/DataExtraction/data/shapefiles"
 proj4 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 
+# Full domain (Alaska / western Canada)
+akcan1_shp <- readOGR(file.path(shpDir, "Political/Alaska.shp"), verbose=FALSE) %>% spTransform(proj4) # temporary
 # State/Province
-# Alaska
-Alaska_shp <- readOGR(file.path(shpDir, "Political/Alaska.shp"), verbose=FALSE) %>% spTransform(proj4)
-# Canada
-Canada_shp <- readOGR(file.path(shpDir, "Political/CanadianProvinces_NAD83AlaskaAlbers.shp"), verbose=FALSE) %>% spTransform(proj4)
-Canada_IDs <- c("Alberta", "Saskatchewan", "Manitoba", "Yukon Territory", "British Columbia")
-Canada_shp <- subset(Canada_shp, NAME %in% Canada_IDs)
+akcan2_shp <- readOGR(file.path(shpDir, "Political/AK_CAN.shp"), verbose=FALSE) %>% spTransform(proj4)
+akcan2_IDs <- c("Alaska", "Alberta", "Saskatchewan", "Manitoba", "Yukon Territory", "British Columbia")
+akcan2_shp <- subset(akcan2_shp, NAME %in% akcan2_IDs)
 # Alaska ecoregions
-eco32_shp <- readOGR(file.path(shpDir, "AK_ecoregions/akecoregions.shp"), verbose=FALSE) %>% spTransform(proj4)
-eco32_shp <- spTransform(eco32_shp, CRS(proj4string(Alaska_shp)))
-eco9_shp <- unionSpatialPolygons(eco32_shp, eco32_shp@data$LEVEL_2)
-eco3_shp <- unionSpatialPolygons(eco32_shp, eco32_shp@data$LEVEL_1)
+eco3_shp <- readOGR(file.path(shpDir, "AK_Ecoregions/AK_Ecoregions_COMMONER.shp"), verbose=FALSE) %>% spTransform(proj4)
+eco2_shp <- readOGR(file.path(shpDir, "AK_Ecoregions/AK_Ecoregions_LEVEL2.shp"), verbose=FALSE) %>% spTransform(proj4)
+eco1_shp <- readOGR(file.path(shpDir, "AK_Ecoregions/AK_Ecoregions_LEVEL1.shp"), verbose=FALSE) %>% spTransform(proj4)
 # Alaska LCC regions
-LCC_shp <- readOGR(file.path(shpDir, "LCC/LCC_summarization_units_singlepartPolys.shp"), verbose=FALSE) %>% spTransform(proj4)
+LCC_shp <- readOGR(file.path(shpDir, "LCC/LCC_regions.shp"), verbose=FALSE) %>% spTransform(proj4)
 # Alaska/Canada LCC regions
-LCC2_shp <- readOGR(file.path(shpDir, "LCC_AKCAN_boreal/AK_LCC_boundaries_AKAlbersNAD83.shp"), verbose=FALSE) %>% spTransform(proj4)
-LCC2_shp <- subset(LCC2_shp, LCC_Name=="Northwest Boreal LCC")
+LCC2_shp <- readOGR(file.path(shpDir, "AKCAN_LCC/AKCAN_LCC_regions.shp"), verbose=FALSE) %>% spTransform(proj4)
+LCC2_shp <- subset(LCC2_shp, NAME=="Northwest Boreal LCC")
 # CAVM regions
 CAVM_shp <- readOGR(file.path(shpDir, "CAVM/CAVM_complete.shp"), verbose=FALSE) %>% spTransform(proj4)
 # Alaska fire management zones
@@ -82,16 +83,17 @@ FMZ_shp <- readOGR(file.path(shpDir, "FireMgmtZones/FireManagementZones_simplifi
 # Terrestrail Protected Areas
 TPA_shp <- readOGR(file.path(shpDir, "NA_TPA/NA_TPA_simplified.shp"), verbose=FALSE) %>% spTransform(proj4)
 
-#shp.list <- list(Canada_shp, eco32_shp, eco9_shp, eco3_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp)
-#locs_areas <- map(seq_along(locs), ~shp.list[[.x]]@data$Shape_Area) # not implemented yet
+shp.list <- list(akcan1_shp, akcan2_shp, eco1_shp, eco2_shp, eco3_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp)
+locs_areas <- map(seq_along(locs), ~shp.list[[.x]]@data$Shape_Area)
+names(locs_areas) <- names(shp.list) <- names(locs)
 
-walk2(mapsets, list(Canada_shp, eco3_shp, eco9_shp, eco32_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp),
-      ~saveRDS(.y, file=paste0("appData/shp/", .x, ".rds")))
+#walk2(mapsets, list(akcan1_shp, akcan2_shp, eco1_shp, eco2_shp, eco3_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp),
+#      ~saveRDS(.y, file=paste0("climdist/appData/shp/", .x, ".rds")))
 
 locs2 <- locs
-locs2$`LCC Regions` <- levels(LCC_shp$LCC_Name)[c(1,2,4,3,5)]
-locs2$`TPA Regions` <- levels(TPA_shp$MGT_AGENCY)[c(8,1,2,3,7,4,5,6)]
+locs2$`LCC Regions` <- levels(LCC_shp$NAME)[c(1,2,4,3,5)]
+locs2$`TPA Regions` <- levels(TPA_shp$NAME)[c(8,1,2,3,7,4,5,6)]
 
-mapset_colIDs <- c("NAME", "COMMONER", "LEVEL_2", "LEVEL_3", "LCC_Name", "LCC_Name", "Name", "REGION", "MGT_AGENCY")
-objs <- c('locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 'period', 'variables', 'seasons', 'stats', 'mapset_colIDs')
+mapset_colIDs <- rep("NAME", 10)
+objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 'period', 'variables', 'seasons', 'stats', 'mapset_colIDs')
 save(list=objs, file="climdist/appData/appData.RData") # general data
