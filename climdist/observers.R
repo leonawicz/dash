@@ -10,16 +10,12 @@ observeEvent(input$staticmap_btn, {
 # Map-related observers
 # Observe selected mapset for regions list and shapefile reactive values
 observeEvent(input$mapset, {
-  local_cache <- paste0("mapset_data_", input$mapset)
-  if(is.null(mapset_workspace())){
+  if(is.null(input$mapset)){
     rv[["regions"]] <- regions_list_default
-    rv[["shp"]] <- readRDS(file.path(dataloc, "shp/FMZ Regions.rds"))
-  } else if(exists(local_cache, envir=.GlobalEnv)){
-    rv[["regions"]] <- get(local_cache, envir=.GlobalEnv)$regions
-    rv[["shp"]] <- get(local_cache, envir=.GlobalEnv)$shp
+    rv[["shp"]] <- shp.list[[default_mapset]]
   } else {
-    load_map_file(mapset_workspace(), source=data_source)
-    assign(local_cache, list(regions=rv$regions, shp=rv$shp), envir=.GlobalEnv)
+    rv[["regions"]] <- locs[[input$mapset]]
+    rv[["shp"]] <- shp.list[[input$mapset]]
   }
 })
 
