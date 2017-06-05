@@ -49,6 +49,7 @@ shinyServer(function(input, output, session) {
     if(akcan){
       z <- "Alaska/western Canada"
       z.id <- z
+      z.lab <- z
     } else {
       z <- as.character(rv$shp[[mapset_reg_id()]])
       idx <- match(z, locs2[[input$mapset]])
@@ -68,6 +69,12 @@ shinyServer(function(input, output, session) {
             bringToFront=FALSE, sendToBack=FALSE))
         progress$inc((i+1)/n, detail=paste("Adding polygon", i))
       }
+    } else {
+      x <- x %>% addPolygons(data=rv$shp, stroke=TRUE, opacity=1, fillOpacity=0.2, weight=2,
+        group="not_selected", layerId=z.id[1], label=z.lab[1],
+        highlightOptions=highlightOptions(opacity=1, weight=2, fillOpacity=0.2, 
+         bringToFront=FALSE, sendToBack=FALSE))
+      progress$inc((1+1)/n, detail=paste("Adding polygon", 1))
     }
     print(proc.time() - ptm)
     x
