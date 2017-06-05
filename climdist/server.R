@@ -33,6 +33,18 @@ shinyServer(function(input, output, session) {
     input$regions
   })
   
+  output$ColorBy <- renderUI({
+    x <- c("", "RCP", "Model", "Season", "Region")
+    y <- input$marginalize
+    x <- if(is.null(y)) x else setdiff(x, y)
+    selectInput("clrby", "Color by", choices=x, selected="", width="100%")
+  })
+  output$FacetBy <- renderUI({
+    x <- c("", "RCP", "Model", "Season", "Region")
+    y <- input$marginalize
+    x <- if(is.null(y)) x else setdiff(x, y)
+    selectInput("fctby", "Facet by", choices=x, selected="", width="100%")
+  })
   alpha_den <- reactive({ if(is.null(input$alpha_den)) 1 else input$alpha_den })
   alpha_ts <- reactive({ if(is.null(input$alpha_ts)) 0.1 else input$alpha_ts })
   alpha_dec <- reactive({ if(is.null(input$alpha_dec)) 0.1 else input$alpha_dec })
@@ -132,13 +144,14 @@ shinyServer(function(input, output, session) {
   d <- reactive({
     input$go_btn
     isolate({
+      set.seed(1)
       req(d_sub())
       m <- input$marginalize
-      if(!is.null(m) && m!=""){
+      if(!is.null(m) && !"" %in% m){
         m <- sort(m)
         m.lev <- map(m, ~levels(d_sub()[[.x]])) %>% 
           map(~.x[!.x %in% c("Historical", "CRU 4.0")])
-        m <- m[map_int(m.lev, ~length(.x) > 1)]
+        m <- m[which(map_lgl(m.lev, ~length(.x) > 1))]
         if(!length(m)) m <- NULL
       }
       d.args <- if(input$variable=="Precipitation") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
@@ -167,7 +180,7 @@ shinyServer(function(input, output, session) {
       for(j in seq_along(x)){
         step <- step + 1
         progress$inc(1/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
-        x[[j]] <- sample_rvtable(x[[j]], n=10)
+        x[[j]] <- sample_rvtable(x[[j]], n=100)
       }
       x <- bind_rows(x)
       if(nrow(x) > 0){
@@ -176,6 +189,9 @@ shinyServer(function(input, output, session) {
         } else {
           x <- mutate(x, Val=ifelse(Var=="pr", round(Val/25.4, 3), round((9/5)*Val + 32, 1)))
         }
+        if(input$variable=="pr") x$Val[x$Val < 0] <- 0
+        x <- mutate(x, Decade=factor(
+          paste0(Year - Year %% 10, "s"), levels=paste0(unique(Year - Year %% 10), "s")))
       }
       x
     })
@@ -224,4 +240,116 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "dist_plot", suspendWhenHidden=FALSE)
   outputOptions(output, "ts_plot", suspendWhenHidden=FALSE)
   outputOptions(output, "dec_plot", suspendWhenHidden=FALSE)
+  
+  kilo_mega <- function(x){
+    if(abs(x) < 1e4) paste0(x) else 
+      if(abs(x) < 1e5) paste0(round(x/1000, 1), "K") else 
+        if(abs(x) < 1e6) paste0(round(x/1000), "K") else
+          paste0(round(x/1e6, 2), "M") 
+  }
+  
+  output$statBoxes1 <- renderUI({
+    x <- d()
+    dec <- as.character(sort(unique(x$Decade)))
+    if(length(dec) > 1) dec <- paste(dec[1], dec[length(dec)], sep=" - ")
+    if(preventPlot() || nrow(x)==0) return()
+    x <- ungroup(x) %>% summarise_(.dots=list(
+      Mean_=paste0("mean(Val)"),
+      Min_=paste0("min(Val)"),
+      Max_=paste0("max(Val)"),
+      Median_=paste0("stats::median(Val)"),
+      Pct25_=paste0("stats::quantile(Val, prob=0.25)"),
+      Pct75_=paste0("stats::quantile(Val, prob=0.75)"),
+      SD_=paste0("stats::sd(Val)")
+    )) %>% round %>% unlist %>% map_chr(~kilo_mega(.x))
+    
+    clrs <- c("yellow", "orange", "purple", "red", "blue", "navy")
+    statval <- c(x[1:4], paste(x[5], "-", x[6]), x[7])
+    statlab <- list(
+      c("Mean", dec), c("Min", dec), c("Max", dec), c("Median", dec), c("IQR", dec), c("Std Dev", dec)
+    )
+    val <- map2(statval, c(rep(75, 4), 75, 75), ~pTextSize(.x, .y))
+    text <- map2(statlab, rep(150, 6), ~pTextSize(.x, .y, margin=0))
+    y <- list(
+      mean=valueBox(val[[1]], text[[1]], icon=icon(list(src="stat_icon_normal_mean_white.png", width="90px"), lib="local"), color=clrs[1], width=NULL),
+      min=valueBox(val[[2]], text[[2]], icon=icon(list(src="stat_icon_normal_min_white.png", width="90px"), lib="local"), color=clrs[2], width=NULL),
+      max=valueBox(val[[3]], text[[3]], icon=icon(list(src="stat_icon_normal_max_white.png", width="90px"), lib="local"), color=clrs[3], width=NULL),
+      med=valueBox(val[[4]], text[[4]], icon=icon(list(src="stat_icon_normal_median_white.png", width="90px"), lib="local"), color=clrs[4], width=NULL),
+      iqr=valueBox(val[[5]], text[[5]], icon=icon(list(src="stat_icon_boxplot_iqr_white.png", width="90px"), lib="local"), color=clrs[5], width=NULL),
+      sd=valueBox(val[[6]], text[[6]], icon=icon(list(src="stat_icon_normal_sd_white.png", width="90px"), lib="local"), color=clrs[6], width=NULL)
+    )
+    
+    tagList(
+      h4("Aggregate period statistics"),
+      fluidRow(
+        tags$head(tags$style(HTML(".small-box {height: 110px}"))),
+        column(2, y$mean), column(2, y$sd), column(2, y$med), column(2, y$iqr), column(2, y$min), column(2, y$max)
+      ),
+      fluidRow(column(5, h4("Period density")), column(7, h4("Annual observations")))
+    )
+  })
+  
+  output$statBoxes2 <- renderUI({
+    x <- d()
+    if(preventPlot() || nrow(x)==0) return()
+    dots <- paste0("mean(Val)")
+    x <- group_by(x, Decade) %>% summarise_(.dots=list(Decadal_mean=dots)) %>%
+      rename(Val=Decadal_mean)
+    v <- "Val"
+    idx.mn <- which.min(x[[v]])
+    idx.mx <- which.max(x[[v]])
+    idx.dn <- if(nrow(x)==1) NA else seq(which.min(diff(x[[v]])), length.out=2)
+    idx.up <- if(nrow(x)==1) NA else seq(which.max(diff(x[[v]])), length.out=2)
+    tot <- tail(x[[v]], 1) - x[[v]][1]
+    tot2 <- ifelse(tot < 1 & tot > 0, 1, ifelse(tot < 0 & tot > -1, -1, round(tot)))
+    pct <- paste0(round(100*(tail(x[[v]], 1) / x[[v]][1] - 1)), "%")
+    
+    clrs <- c("yellow", "orange", "purple", "red", "blue", "navy")
+    statval <- list(
+      mn=kilo_mega(round(x[[v]][idx.mn])),
+      mx=kilo_mega(round(x[[v]][idx.mx])),
+      dn=if(is.na(idx.dn[1])) NA else kilo_mega(round(diff(x[[v]])[idx.dn[1]])),
+      up=if(is.na(idx.up[1])) NA else kilo_mega(round(diff(x[[v]])[idx.up[1]])),
+      totdif=kilo_mega(tot2),
+      totpct=pct
+    )
+    
+    src.dnup <- c("stat_icon_bar_deltaNeg_white.png", "stat_icon_bar_deltaPos_white.png")
+    if(!is.na(statval$dn[1]) && statval$dn > 0) src.dnup[1] <- src.dnup[2]
+    if(!is.na(statval$up[1]) && statval$up < 0) src.dnup[2] <- src.dnup[1]
+    if(tot < 0){
+      src.totals <- c("stat_icon_ts_deltaDec_white.png", "stat_icon_ts_deltaPctDec_white.png")
+    } else {
+      src.totals <- c("stat_icon_ts_deltaInc_white.png", "stat_icon_ts_deltaPctInc_white.png")
+    }
+    dec <- if(nrow(x)==1) paste(x$Decade[1]) else paste(x$Decade[c(1, nrow(x))], collapse=" - ")
+    
+    statlab <- list(
+      c("Min", paste(x$Decade[idx.mn])),
+      c("Max", paste(x$Decade[idx.mx])),
+      c("Min growth", paste(x$Decade[idx.dn], collapse=" - ")),
+      c("Max growth", paste(x$Decade[idx.up], collapse=" - ")),
+      c("Total change", dec),
+      c("% change", dec)
+    )
+    val <- map2(statval, 75, ~pTextSize(.x, .y))
+    text <- map2(statlab, rep(150, 6), ~pTextSize(.x, .y, margin=0))
+    y <- list(
+      mn=valueBox(val[[1]], text[[1]], icon=icon(list(src="stat_icon_normal_min_white.png", width="90px"), lib="local"), color=clrs[1], width=NULL),
+      mx=valueBox(val[[2]], text[[2]], icon=icon(list(src="stat_icon_normal_max_white.png", width="90px"), lib="local"), color=clrs[2], width=NULL),
+      dn=valueBox(val[[3]], text[[3]], icon=icon(list(src=src.dnup[1], width="90px"), lib="local"), color=clrs[3], width=NULL),
+      up=valueBox(val[[4]], text[[4]], icon=icon(list(src=src.dnup[2], width="90px"), lib="local"), color=clrs[4], width=NULL),
+      totdif=valueBox(val[[5]], text[[5]], icon=icon(list(src=src.totals[1], width="90px"), lib="local"), color=clrs[5], width=NULL),
+      totpct=valueBox(val[[6]], text[[6]], icon=icon(list(src=src.totals[2], width="90px"), lib="local"), color=clrs[6], width=NULL)
+    )
+    
+    tagList(
+      h4("Decadal averages: change over time"),
+      fluidRow(
+        tags$head(tags$style(HTML(".small-box {height: 110px}"))),
+        column(2, y$totdif), column(2, y$totpct), column(2, y$dn), column(2, y$up), column(2, y$mn), column(2, y$mx)
+      ),
+      h4("Decadal distributions: box plots and observations")
+    )
+  })
 })
