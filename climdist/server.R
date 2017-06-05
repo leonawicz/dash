@@ -1,10 +1,6 @@
 library(rvtable)
-lon <- -155
-lat <- 65
-tab_ids <- c("burnarea", "firefreq", "firesize", "vegarea", "vegage")
-mods <- paste0("mod_", tab_ids)
 default_mapset <- "AK-CAN"
-regions_list_default <- locs$`FMZ Regions`
+regions_list_default <- locs[[default_mapset]]
 regions_selected_default <- regions_list_default[1]
 cru.max.yr <- 2015
 rcp.min.yr <- 2006
@@ -14,33 +10,10 @@ shinyServer(function(input, output, session) {
   source("observers.R", local=TRUE) # map and region selectInput observers
   source("tour.R", local=TRUE) # introjs tour
   
-  mapset_workspace <- reactive({ 
-    file.path(dataloc, "shp", paste0(input$mapset, ".rds"))
-  })
-  
-  mapset_reg_id <- reactive({
-    mapset_colIDs[match(input$mapset, mapsets)]
-  })
+  mapset_reg_id <- reactive("NAME") #reactive({ mapset_colIDs[match(input$mapset, mapsets)] })
   
   rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, cru=NULL,
-          regions=regions_list_default, shp=readRDS(file.path(dataloc, "shp/FMZ Regions.rds")))
-  
-  load_map_file <- function(file, source="local"){
-    progress <- shiny::Progress$new()
-    on.exit(progress$close())
-    if(source=="local"){
-      progress$set(message="Loading local data", value=1)
-      shp <- readRDS(file)
-      progress$set(message="Loading local data", value=2)
-    }
-    if(source=="aws"){
-      progress$set(message="Fetching AWS data", value=1)
-      shp <- s3readRDS(file)
-      progress$set(message="Fetching AWS data", value=2)
-    }
-    rv[["regions"]] <- locs[[input$mapset]]
-    rv[["shp"]] <- shp
-  }
+          regions=regions_list_default, shp=shp.list[[default_mapset]])
 
   mapset_labs <- reactive({ names(mapsets)[match(input$mapset, mapsets)] })
   
@@ -74,7 +47,7 @@ shinyServer(function(input, output, session) {
     progress$set(message="Generating zone map", value=0)
     akcan <- input$mapset==default_mapset
     if(akcan){
-      z <- "Alaska and western Canada"
+      z <- "Alaska/western Canada"
       z.id <- z
     } else {
       z <- as.character(rv$shp[[mapset_reg_id()]])
@@ -82,8 +55,9 @@ shinyServer(function(input, output, session) {
       z.id <- as.character(rv$regions[idx])
       z.lab <- names(rv$regions[idx])
     }
+    xyzoom <- if(input$mapset %in% mapsets[1:2]) c(-135, 61, 3) else c(-155, 65, 4)
     n <- 1 + length(z)
-    x <- leaflet() %>% addTiles() %>% setView(lon, lat, 4)
+    x <- leaflet() %>% addTiles() %>% setView(xyzoom[1], xyzoom[2], xyzoom[3])
     progress$inc(1/n, detail="Basemap built")
     # Add background polygon region outlines after map is created
     if(!akcan){
