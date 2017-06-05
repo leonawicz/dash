@@ -28,8 +28,6 @@ decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, pr
   if(prevent) return()
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby, dodgeable=TRUE)
-  data <- mutate(data, Decade=factor(
-    paste0(Year - Year %% 10, "s"), levels=paste0(unique(Year - Year %% 10), "s")))
   g <- g <- ggplot(data=data, aes_string("Decade", "Val", colour=clrby, fill=clrby))
   doBox <- type %in% c("Box plot", "Overlay")
   doStrip <- type %in% c("Strip chart", "Overlay")
