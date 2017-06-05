@@ -58,11 +58,11 @@ locs$`TPA Regions` <- c(
 # Shapefiles
 library(rgdal)
 library(maptools)
-shpDir <- "LowResFlatShapefiles" #"C:/github/DataExtraction/data/shapefiles"
+shpDir <- "LowResFlatShapefiles"
 proj4 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 
 # Full domain (Alaska / western Canada)
-akcan1_shp <- readOGR(file.path(shpDir, "Political/Alaska.shp"), verbose=FALSE) %>% spTransform(proj4) # temporary
+akcan1_shp <- readOGR(file.path(shpDir, "Political/AK_CAN_Dissolved.shp"), verbose=FALSE) %>% spTransform(proj4)
 # State/Province
 akcan2_shp <- readOGR(file.path(shpDir, "Political/AK_CAN.shp"), verbose=FALSE) %>% spTransform(proj4)
 akcan2_IDs <- c("Alaska", "Alberta", "Saskatchewan", "Manitoba", "Yukon Territory", "British Columbia")
