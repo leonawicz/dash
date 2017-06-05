@@ -49,11 +49,11 @@ function(request){
                   ),
                   column(4, 
                     sliderInput("alpha_dec", "Decadal series transparency", 0.1, 1, 0.5, 0.1, sep="", width="100%"),
-                    selectInput("bptype", "Decadal distributions", c("Box plot", "Strip chart", "Overlay"), width="100%")
+                    selectInput("bptype", "Decadal distributions", c("Box plot", "Strip chart", "Overlay"), "Overlay", width="100%")
                   )
                 )
               ),
-              box(
+              fluidRow(box(
                 fluidRow(
                   column(5,
                     div(id="plot-container",
@@ -115,22 +115,24 @@ function(request){
                   )
                 ),
                 title="Data selection", width=12, collapsible=TRUE
-              ),
+              )),
               uiOutput("statBoxes1"),
-              fluidRow(
+              fluidRow(box(
                 column(5,
                   plotOutput("dist_plot", height="auto")
                 ),
                 column(7,
                   plotOutput("ts_plot", height="auto")
-                )
-              ),
+                ),
+                title="Period density and annual observations", width=12, collapsible=TRUE
+              )),
               uiOutput("statBoxes2"),
-              fluidRow(
+              fluidRow(box(
                 column(12,
                   plotOutput("dec_plot", height="auto")
-                )
-              )
+                ),
+                title="Decadal distributions: box plots and observations", width=12, collapsible=TRUE
+              ))
         ),
         tabItem(tabName="info",
           h2("About this application"),

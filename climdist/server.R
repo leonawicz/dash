@@ -263,7 +263,7 @@ shinyServer(function(input, output, session) {
       SD_=paste0("stats::sd(Val)")
     )) %>% round %>% unlist %>% map_chr(~kilo_mega(.x))
     
-    clrs <- c("yellow", "orange", "purple", "red", "blue", "navy")
+    clrs <- c("light-blue", "light-blue", "blue", "light-blue", "blue", "blue")
     statval <- c(x[1:4], paste(x[5], "-", x[6]), x[7])
     statlab <- list(
       c("Mean", dec), c("Min", dec), c("Max", dec), c("Median", dec), c("IQR", dec), c("Std Dev", dec)
@@ -284,8 +284,7 @@ shinyServer(function(input, output, session) {
       fluidRow(
         tags$head(tags$style(HTML(".small-box {height: 110px}"))),
         column(2, y$mean), column(2, y$sd), column(2, y$med), column(2, y$iqr), column(2, y$min), column(2, y$max)
-      ),
-      fluidRow(column(5, h4("Period density")), column(7, h4("Annual observations")))
+      )
     )
   })
   
@@ -304,7 +303,7 @@ shinyServer(function(input, output, session) {
     tot2 <- ifelse(tot < 1 & tot > 0, 1, ifelse(tot < 0 & tot > -1, -1, round(tot)))
     pct <- paste0(round(100*(tail(x[[v]], 1) / x[[v]][1] - 1)), "%")
     
-    clrs <- c("yellow", "orange", "purple", "red", "blue", "navy")
+    clrs <- c("light-blue", "blue", "light-blue", "blue", "light-blue", "blue")
     statval <- list(
       mn=kilo_mega(round(x[[v]][idx.mn])),
       mx=kilo_mega(round(x[[v]][idx.mx])),
@@ -348,8 +347,7 @@ shinyServer(function(input, output, session) {
       fluidRow(
         tags$head(tags$style(HTML(".small-box {height: 110px}"))),
         column(2, y$totdif), column(2, y$totpct), column(2, y$dn), column(2, y$up), column(2, y$mn), column(2, y$mx)
-      ),
-      h4("Decadal distributions: box plots and observations")
+      )
     )
   })
 })
