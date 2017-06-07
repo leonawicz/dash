@@ -215,6 +215,7 @@ shinyServer(function(input, output, session) {
   
   plot_dist <- reactive({
     input$go_btn
+    input$plot_btn
     isolate({
       distPlot(d(), primeAxis(), clrby(), colorvec(), alpha_den(), 
         input$fctby, facet_scales(), yrs(), "density", preventPlot()) 
@@ -222,13 +223,15 @@ shinyServer(function(input, output, session) {
   })
   plot_ts <- reactive({
     input$go_btn
+    input$plot_btn
     isolate({
       tsPlot(d(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-        input$fctby, facet_scales(), preventPlot())
+        input$fctby, facet_scales(), input$show_points, preventPlot())
     })
   })
   plot_dec <- reactive({
     input$go_btn
+    input$plot_btn
     isolate({
       decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
              input$fctby, facet_scales(), input$bptype, preventPlot())
@@ -253,6 +256,7 @@ shinyServer(function(input, output, session) {
     dec <- as.character(sort(unique(x$Decade)))
     if(length(dec) > 1) dec <- paste(dec[1], dec[length(dec)], sep=" - ")
     if(preventPlot() || nrow(x)==0) return()
+    rnd <- if(x$Var[1]=="pr") 0 else 1
     x <- ungroup(x) %>% summarise_(.dots=list(
       Mean_=paste0("mean(Val)"),
       Min_=paste0("min(Val)"),
@@ -261,7 +265,7 @@ shinyServer(function(input, output, session) {
       Pct25_=paste0("stats::quantile(Val, prob=0.25)"),
       Pct75_=paste0("stats::quantile(Val, prob=0.75)"),
       SD_=paste0("stats::sd(Val)")
-    )) %>% round %>% unlist %>% map_chr(~kilo_mega(.x))
+    )) %>% round(rnd) %>% unlist %>% map_chr(~kilo_mega(.x))
     
     clrs <- c("light-blue", "light-blue", "blue", "light-blue", "blue", "blue")
     statval <- c(x[1:4], paste(x[5], "-", x[6]), x[7])
@@ -292,6 +296,8 @@ shinyServer(function(input, output, session) {
     x <- d()
     if(preventPlot() || nrow(x)==0) return()
     dots <- paste0("mean(Val)")
+    pr <- x$Var[1]=="pr"
+    rnd <- if(pr) 0 else 1
     x <- group_by(x, Decade) %>% summarise_(.dots=list(Decadal_mean=dots)) %>%
       rename(Val=Decadal_mean)
     v <- "Val"
@@ -300,15 +306,18 @@ shinyServer(function(input, output, session) {
     idx.dn <- if(nrow(x)==1) NA else seq(which.min(diff(x[[v]])), length.out=2)
     idx.up <- if(nrow(x)==1) NA else seq(which.max(diff(x[[v]])), length.out=2)
     tot <- tail(x[[v]], 1) - x[[v]][1]
-    tot2 <- ifelse(tot < 1 & tot > 0, 1, ifelse(tot < 0 & tot > -1, -1, round(tot)))
-    pct <- paste0(round(100*(tail(x[[v]], 1) / x[[v]][1] - 1)), "%")
+    tot2 <- if(pr){
+      ifelse(tot < 1 & tot > 0, 1, ifelse(tot < 0 & tot > -1, -1, round(tot)))
+    } else round(tot, rnd)
+    x <<- x
+    pct <- if(!pr) NA else paste0(round(100*(tail(x[[v]], 1) / x[[v]][1] - 1)), "%")
     
     clrs <- c("light-blue", "blue", "light-blue", "blue", "light-blue", "blue")
     statval <- list(
-      mn=kilo_mega(round(x[[v]][idx.mn])),
-      mx=kilo_mega(round(x[[v]][idx.mx])),
-      dn=if(is.na(idx.dn[1])) NA else kilo_mega(round(diff(x[[v]])[idx.dn[1]])),
-      up=if(is.na(idx.up[1])) NA else kilo_mega(round(diff(x[[v]])[idx.up[1]])),
+      mn=kilo_mega(round(x[[v]][idx.mn], rnd)),
+      mx=kilo_mega(round(x[[v]][idx.mx], rnd)),
+      dn=if(is.na(idx.dn[1])) NA else kilo_mega(round(diff(x[[v]])[idx.dn[1]], rnd)),
+      up=if(is.na(idx.up[1])) NA else kilo_mega(round(diff(x[[v]])[idx.up[1]], rnd)),
       totdif=kilo_mega(tot2),
       totpct=pct
     )
