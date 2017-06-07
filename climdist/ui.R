@@ -13,7 +13,7 @@ function(request){
       useToastr(),
       introjsUI(),
       selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
-      actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
+      #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
         id="tabs",
         menuItem("Climate", icon=icon("sliders"), tabName="climate"),
@@ -45,7 +45,8 @@ function(request){
                   ),
                   column(4,
                     sliderInput("alpha_ts", "Annual series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%"),
-                    selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%")
+                    selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%"),
+                    checkboxInput("show_points", "Show annual observations", FALSE, width="100%")
                   ),
                   column(4, 
                     sliderInput("alpha_dec", "Decadal series transparency", 0.1, 1, 0.5, 0.1, sep="", width="100%"),
@@ -104,12 +105,14 @@ function(request){
                     fluidRow(
                      column(4, 
                        conditionalPanel(valid_input_selection,
-                         actionButton("go_btn", "Build distributions", class="btn-block", icon("globe"))
+                         actionButton("go_btn", "Build distributions", class="btn-block", icon("signal"))
                        )
                      ),
-                     column(4, ""),
                      column(4,
                        actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear"))
+                     ),
+                     column(4,
+                       actionButton("plot_btn", "Regenerate plots", class="btn-block", icon("line-chart"))
                      )
                     )
                   )

@@ -1,11 +1,11 @@
 # Modal-based inputs
-observeEvent(input$staticmap_btn, {
-  showModal(modalDialog(
-    title=names(mapsets)[match(input$mapset, mapsets)], footer=NULL,
-    img(src='Fire_Mgmt_Areas.png', align="center", style="width: 100%"),
-    size="l", easyClose=TRUE
-  ))
-})
+#observeEvent(input$staticmap_btn, {
+#  showModal(modalDialog(
+#    title=names(mapsets)[match(input$mapset, mapsets)], footer=NULL,
+#    img(src='Fire_Mgmt_Areas.png', align="center", style="width: 100%"),
+#    size="l", easyClose=TRUE
+#  ))
+#})
 
 # Map-related observers
 # Observe selected mapset for regions list and shapefile reactive values
