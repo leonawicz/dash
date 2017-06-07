@@ -81,8 +81,9 @@ observe({
 # Observe button click for loading data
 observeEvent(input$go_btn, {
   if(input$go_btn==0) return()
-  load_files <- function(path, files){
-    map(1:nrow(files), ~readRDS(file.path(path, files[.x, 5])) %>% 
+  load_files <- function(path, files, src="local"){
+    readData <- if(src=="local") readRDS else s3readRDS
+    map(1:nrow(files), ~readData(file.path(path, files[.x, 5])) %>% 
           mutate(RCP=factor(switch(files[.x, 2], 
                                    historical="Historical", 
                                    rcp45="RCP 4.5", 
@@ -108,7 +109,7 @@ observeEvent(input$go_btn, {
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     progress$set(1, message="Loading data...", detail=NULL)
-    rv$d <- map(region_paths, ~load_files(.x, files())) %>% bind_rows  %>% droplevels
+    rv$d <- map(region_paths, ~load_files(.x, files(), data_source)) %>% bind_rows  %>% droplevels
     rv$current_files <- files()
     rv$current_regions <- regions_selected()
     rv$cru <- input$cru
