@@ -49,19 +49,22 @@ tour.text <- c(
   including the range of years selected. A progress bar will display in the bottom right corner.",
   "10"="When multiple levels of a factor variable are included in the data selection, plots can be colored by levels.",
   "11"="Faceting by a variable's levels works the same as with coloring.",
-  "12"="Additional settings pertaining to plot formatting can be found here.",
-  "13"="When user selections are complete, click here to load the relevant data slices, compile probability distributions,
-  and draw summary plots."
+  "12"="When user selections are complete, click here to load the relevant data slices, compile probability distributions,
+  and draw summary plots.",
+  "13"="Additional settings pertaining to plot formatting can be found here.",
+  "14"="When the only changes made pertain to plot formatting, regenerate plots and statistics without reloading redundant data.
+  This saves time, especially with large data sets or when computing marginal distributions as part of your data specifications.
+  Rebuilding distributions is only necessary when data selections have changed."
 )
 
-tour.pos <- c("right", "bottom", rep("left", 11))
+tour.pos <- c("right", "bottom", rep("left", 12))
 
 tour.element <- c(
   "#mapset + .selectize-control", "#Map", "#regions + .selectize-control",
   "#variable + .selectize-control",
   "#rcps + .selectize-control", "#gcms + .selectize-control", "#seasons + .selectize-control", ".js-irs-3", 
   "#marginalize + .selectize-control", "#clrby + .selectize-control", "#fctby + .selectize-control",
-  "#settings_btn", "#go_btn"
+  "#go_btn", "#settings_btn", "#plot_btn"
 )
 
 steps <- reactive({
@@ -76,7 +79,7 @@ observeEvent(input$help, {
   tour.options <- list(steps=steps(), "showProgress"="true", "showStepNumbers"="false")
   tour.events <- list(
     "onchange"=I(paste0(
-      stepcb(stepEquals(c(1:13)), c(rmClass(not.db.climate), goClass("climate"))),
+      stepcb(stepEquals(c(1:14)), c(rmClass(not.db.climate), goClass("climate"))),
       collapse="\n"))
   )
   introjs(session, options=tour.options, events=tour.events)
