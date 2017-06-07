@@ -14,12 +14,13 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, ty
     
 }
 
-tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, prevent){
+tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, show_points, prevent){
   if(prevent) return()
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby)
-  g <- ggplot(data=data, aes_string("Year", "Val", colour=clrby, fill=clrby)) + 
-    geom_point(size=3, shape=21, color="black", alpha=alpha, position=pos)
+  g <- ggplot(data=data, aes_string("Year", "Val", colour=clrby, fill=clrby))
+  if(show_points) g <- g + geom_point(size=3, shape=21, color="black", alpha=alpha, position=pos)
+  g <- g + geom_smooth(method="lm", size=1) + geom_smooth(method="lm", colour="white", size=2, se=FALSE) + geom_smooth(method="lm", size=1, se=FALSE)
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
   g +  theme_bw(base_size=14) + plottheme + labs(y=ylb) + guides(fill=lgd_alpha)
 }
