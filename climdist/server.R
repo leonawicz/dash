@@ -95,7 +95,10 @@ shinyServer(function(input, output, session) {
   output$Map <- renderLeaflet(mapSelect())
   outputOptions(output ,"Map", suspendWhenHidden=FALSE)
   
-  metric <- reactive({ is.null(input$metric) || input$metric=="Metric" })
+  metric <- reactive({
+    input$go_btn
+    isolate( is.null(input$metric) || input$metric=="Metric" )
+  })
   i <- reactive({
     cur_gcms <- input$gcms
     if(!is.null(input$cru) && input$cru) cur_gcms <- c("CRU 4.0", cur_gcms)
