@@ -161,7 +161,8 @@ function(request){
           Overall, the app provides users with direct access to a synthesis of map layers containing a total of approximately 200 billion pixels,
           all without the need to reduce spatial climate distributions to select, precomputed statistics.
           Then with some additonal in-app computing time at users' discretion, 
-          the app also allows users to compute any number of marginal distributions of interest.", style="text-align:justify"),
+          the app also allows users to compute any number of marginal distributions of interest.
+          The app exposes hundreds of gigabytes of data to the user and any slice of the data can be rapidly accessed.", style="text-align:justify"),
           h2("Frequently asked questions"),
           faq,
           h2("Contact information"),
