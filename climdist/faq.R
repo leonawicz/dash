@@ -5,10 +5,23 @@ bsCollapse(id="faq",
     the estimated distribution of values across space for a given spatial domain.
       ", style="text-align:justify"),
     style="info"),
-  bsCollapsePanel("What are Fire Mgmt Zones?",
+  bsCollapsePanel("Why use probability distributions?",
+    p("Any statistic of interest can be calculate from the probability distribution of a random available.
+      For example, by making complete distributions available for the four random variables in this app,
+      the app computes the mean, median, IQR, standard deviation, minimum and maximum across space for a geographic region.
+      Other statistics not shown in the app such as various distributions quantiles are equally accessible.", style="text-align:justify"),
+    p("The more that the original probability distributions are made available to a user directly, the user has the ability to access
+      whatever statistics they are interested in rather than be restricted to a predetermined set.
+      Distributions can also be integrated, collapsing over multiple levels of another variable such as climate models,
+      to yield a marginal distribution across models. This depends on access to the individual distributions.", style="text-align:justify"),
+    img(src="dist_graphic_bad.png", style="align: left;", width="49%"),
+    img(src="dist_graphic_good.png", width="49%"),
+    style="info"),
+  bsCollapsePanel("What are Fire Management Zones?",
     p("These regions are the current Fire Management Zones for Alaska. For more information, please see the following link.", style="text-align:justify"),
     a("Bureau of Land Management / Alaska Fire Service - Alaska zone coverage maps", 
       href="https://afs.ak.blm.gov/fire-management/zones-alaska-zone-coverage-maps.php", target="_blank"),
+    br(), img(src="Fire_Mgmt_Areas.png", width="50%"),
     style="info"),
   bsCollapsePanel("What is a GCM?",
     p("General Circulation Models (GMCs) are used to depict how climate processes respond to the composition of various gases in the atmosphere.
