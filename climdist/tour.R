@@ -36,7 +36,7 @@ tour.text <- c(
   clicking on polygons in the map pane is convenient for selecting or deselecting subdomains, but this can also be done
   using the region selection menu, which populates with the same subdomains based on the selected map layer.
   The dropdown menu selections and interactive map selections are synchronized.",
-  "05"="Four climate variables are available: seasonal total precipitation totals and seasonal 
+  "05"="Four climate variables are available: seasonal total precipitation and seasonal 
   means of minimum, mean, and maximum daily temperatures.",
   "06"="Representative Concentration Pathways (RCPs) refer to different levels of
   projected future greenhouse gas emmissions based on different assumptions about population growth,
