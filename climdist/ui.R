@@ -109,14 +109,17 @@ function(request){
                     fluidRow(
                      column(4, 
                        conditionalPanel(valid_input_selection,
-                         actionButton("go_btn", "Build distributions", class="btn-block", icon("signal"))
+                         actionButton("go_btn", "Build distributions", class="btn-block btn-go", icon("signal")),
+                         bsTooltip("go_btn", "Build probability distributions based on current data selections.")
                        )
                      ),
                      column(4,
-                       actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear"))
+                       actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear")),
+                       bsTooltip("settings_btn", "Addional specifications for data selection and plot formatting.")
                      ),
                      column(4,
-                       actionButton("plot_btn", "Regenerate plots", class="btn-block", icon("line-chart"))
+                       actionButton("plot_btn", "Regenerate plots", class="btn-block", icon("line-chart")),
+                       bsTooltip("plot_btn", "Regenerate plots quickly when only plot formatting has changed but data selection is the same.")
                      )
                     )
                   )
