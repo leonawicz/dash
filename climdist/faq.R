@@ -42,5 +42,17 @@ bsCollapse(id="faq",
       RCP 8.5 represents significant increases in the population and a continuation of the use of energy sources
       that emit large quantities of green house gases. 
       RCP 6.0 lies somewhere in between.", style="text-align:justify"), 
-      style="info")
+      style="info"),
+  bsCollapsePanel("How did you make this app?",
+    p("This app is written in the", 
+      a("R programming language", href="https://www.r-project.org/", target="_blank"), "and built with the", 
+      a("Shiny", href="https://shiny.rstudio.com/", target="_blank"), "web application framework for R.
+      Is your organization looking for similar web applications or dashboards for your data and analytics needs?
+      SNAP designs R Shiny apps and other web-based tools and software ranging from simple to complex
+      and suitable for a variety of stakeholders whose purposes include
+      public outreach and scientific communication, directly supporting scientific research,
+      and organizational data access and analytics.", 
+      a("Contact us", href="https://www.snap.uaf.edu/about/contact/", target="_blank"), "for details.",
+      style="text-align: justify;"), 
+    style="info")
 )
