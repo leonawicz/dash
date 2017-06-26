@@ -118,7 +118,7 @@ shinyServer(function(input, output, session) {
       files <- rbind(expand.grid(input$variable, "historical", models, input$seasons, stringsAsFactors=FALSE), files)
     }
     files <- files[!(files[, 3]=="ts40" & files[, 1] %in% c("tasmin", "tasmax")),] # temporarily missing files
-    cbind(files, paste0(files[,1], "_", files[,2], "_", files[,3], "_", files[,4], ".rds"))
+    cbind(files, Var5=paste0(files[,1], "_", files[,2], "_", files[,3], "_", files[,4], ".rds"))
   })
   
   noData <- reactive({ any(sapply(i(), is.null)) || is.null(rv$d) })
@@ -157,7 +157,7 @@ shinyServer(function(input, output, session) {
         m <- m[which(map_lgl(m.lev, ~length(.x) > 1))]
         if(!length(m)) m <- NULL
       }
-      d.args <- if(input$variable=="Precipitation") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
+      d.args <- if(input$variable=="pr") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
       s.args <- list(n=1000)
       progress <- shiny::Progress$new()
       on.exit(progress$close())
