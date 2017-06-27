@@ -13,7 +13,7 @@ shinyServer(function(input, output, session) {
   mapset_reg_id <- reactive("NAME") #reactive({ mapset_colIDs[match(input$mapset, mapsets)] })
   
   rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, cru=NULL,
-          regions=regions_list_default, shp=shp.list[[default_mapset]])
+          regions=regions_list_default, shp=shp.list[[default_mapset]], go=1, intro_toast_done=FALSE)
 
   mapset_labs <- reactive({ names(mapsets)[match(input$mapset, mapsets)] })
   
@@ -96,14 +96,14 @@ shinyServer(function(input, output, session) {
   outputOptions(output ,"Map", suspendWhenHidden=FALSE)
   
   metric <- reactive({
-    input$go_btn
+    rv$go
     isolate( is.null(input$metric) || input$metric=="Metric" )
   })
   i <- reactive({
     cur_gcms <- input$gcms
     if(!is.null(input$cru) && input$cru) cur_gcms <- c("CRU 4.0", cur_gcms)
     list(rcps=input$rcps, gcms=cur_gcms, 
-      reg=input$regions, seasons=input$seasons, yrs=input$yrs,
+      reg=regions_selected(), seasons=input$seasons, yrs=input$yrs,
       reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
   })
   
@@ -124,7 +124,8 @@ shinyServer(function(input, output, session) {
   noData <- reactive({ any(sapply(i(), is.null)) || is.null(rv$d) })
   
   d_sub <- reactive({
-    input$go_btn
+    input$mapset
+    rv$go
     isolate({
       if(is.null(rv$d)) return()
       dots <- c("RCP", "Model", "Region", "Var", "Season", "Year", "Val", "Prob")
@@ -143,7 +144,8 @@ shinyServer(function(input, output, session) {
   })
   
   d <- reactive({
-    input$go_btn
+    input$mapset
+    rv$go
     isolate({
       set.seed(1)
       req(d_sub())
@@ -200,7 +202,8 @@ shinyServer(function(input, output, session) {
   })
   
   yrs <- reactive({ seq(input$yrs[1], input$yrs[2]) })
-  clrby <- reactive({ if(input$clrby=="") NULL else input$clrby })
+  clrby <- reactive({ if(is.null(input$clrby) || input$clrby=="") NULL else input$clrby })
+  fctby <- reactive({ if(is.null(input$fctby) || input$fctby=="") NULL else input$fctby })
   colorvec <- reactive({ if(is.null(clrby())) NULL else tolpal(length(unique(d()[[clrby()]]))) })
   preventPlot <- reactive({ is.null(d()) || nrow(d())==0 })
   plotHeight <- reactive({ if(preventPlot()) 0 else 400 })
@@ -220,7 +223,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       distPlot(d(), primeAxis(), clrby(), colorvec(), alpha_den(), 
-        input$fctby, facet_scales(), yrs(), "density", preventPlot()) 
+               fctby(), facet_scales(), yrs(), "density", preventPlot()) 
     })
   })
   plot_ts <- reactive({
@@ -228,7 +231,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       tsPlot(d(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-        input$fctby, facet_scales(), input$show_points, preventPlot())
+             fctby(), facet_scales(), input$show_points, preventPlot())
     })
   })
   plot_dec <- reactive({
@@ -236,7 +239,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
-             input$fctby, facet_scales(), input$bptype, preventPlot())
+              fctby(), facet_scales(), input$bptype, preventPlot())
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())

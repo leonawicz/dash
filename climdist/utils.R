@@ -61,6 +61,6 @@ interact <- function(x){
     g <- g + scale_fill_manual(values=clr, limits=levels(d[[cby]])) +
       scale_colour_manual(values=clr, limits=levels(d[[cby]]))
   }
-  if(fby!="") g <- g + facet_wrap(as.formula(paste0("~", fby)), scales=scales)
+  if(!is.null(fby)) g <- g + facet_wrap(as.formula(paste0("~", fby)), scales=scales)
   g
 }

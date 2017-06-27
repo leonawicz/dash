@@ -16,6 +16,7 @@ observeEvent(input$mapset, {
   } else {
     rv[["regions"]] <- locs[[input$mapset]]
     rv[["shp"]] <- shp.list[[input$mapset]]
+    rv$d <- NULL
   }
 })
 
@@ -65,22 +66,34 @@ observe({
   success <- paste(names(variables)[match(input$variable, variables)], "distributions available")
   input$rcps; input$gcms; input$regions; input$seasons
   isolate({
-    if(is.null(input$rcps)) x <- "RCP selection missing"
-    if(is.null(input$gcms)) x <- "GCM selection missing"
-    if(!is.null(input$mapset) && input$mapset!=default_mapset && is.null(input$regions)) 
-      x <- paste("No", tolower(mapset_labs()), "selected")
-    if(is.null(input$seasons)) x <- "Season selection missing"
-    if(is.null(x) && all(input$regions %in% rv$regions)){
-      toastr_success(title="Data subset updated", success, timeOut=2500, preventDuplicates=TRUE)
-    } else {
-      toastr_error(title="Empty data set", x, timeOut=2500, preventDuplicates=TRUE)
+    if(!is.null(input$mapset) && input$mapset!=default_mapset){
+      if(is.null(input$rcps)) x <- "RCP selection missing"
+      if(is.null(input$gcms)) x <- "GCM selection missing"
+      if(is.null(input$regions)) 
+        x <- paste("No", tolower(mapset_labs()), "selected")
+      if(is.null(input$seasons)) x <- "Season selection missing"
+      if(is.null(x) && all(input$regions %in% rv$regions)){
+        toastr_success(title="Data subset updated", success, timeOut=2500, preventDuplicates=TRUE)
+      } else {
+        toastr_error(title="Empty data set", x, timeOut=2500, preventDuplicates=TRUE)
+      }
     }
   })
 })
 
 # Observe button click for loading data
 observeEvent(input$go_btn, {
-  if(input$go_btn==0) return()
+  rv$go <- rv$go + 1
+})
+
+observe({
+  rv$go
+  isolate({
+    if(!rv$intro_toast_done){
+      toastr_info(title="Explore spatial climate distributions", 
+        "Update your selections and press 'Build distributions' to load new data.", position="top-center", preventDuplicates=TRUE)
+      rv$intro_toast_done <- TRUE
+    }
   load_files <- function(path, files, src="local"){
     readData <- if(src=="local") readRDS else s3readRDS
     progress <- shiny::Progress$new()
@@ -119,4 +132,5 @@ observeEvent(input$go_btn, {
     rv$cru <- input$cru
     rv$load_new_files <- FALSE
   }
+  })
 })
