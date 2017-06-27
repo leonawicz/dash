@@ -83,17 +83,24 @@ observeEvent(input$go_btn, {
   if(input$go_btn==0) return()
   load_files <- function(path, files, src="local"){
     readData <- if(src=="local") readRDS else s3readRDS
-    map(1:nrow(files), ~readData(file.path(path, files[.x, 5])) %>% 
-          mutate(RCP=factor(switch(files[.x, 2], 
-                                   historical="Historical", 
-                                   rcp45="RCP 4.5", 
-                                   rcp60="RCP 6.0", 
-                                   rcp85="RCP 8.5"), levels=c("Historical", rcps)),
-                 Model=factor(ifelse(files[.x, 3]=="ts40", cru, files[.x, 3]), levels=c(cru, gcms)),
-                 Region=factor(basename(path), levels=rv$regions),
-                 Var=factor(files[.x, 1], levels=variables),
-                 Season=factor(files[.x, 4], levels=seasons)) %>%
-          select(RCP, Model, Region, Var, Season, Year, Val, Prob)) %>% bind_rows %>% rvtable
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    x <- vector("list", nrow(files))
+    for(i in seq_along(x)){
+      progress$inc(1/nrow(files), message="Loading data...", detail=basename(path))
+      x[[i]] <- readData(file.path(path, files[i, 5])) %>% 
+            mutate(RCP=factor(switch(files[i, 2], 
+                                     historical="Historical", 
+                                     rcp45="RCP 4.5", 
+                                     rcp60="RCP 6.0", 
+                                     rcp85="RCP 8.5"), levels=c("Historical", rcps)),
+                   Model=factor(ifelse(files[i, 3]=="ts40", cru, files[i, 3]), levels=c(cru, gcms)),
+                   Region=factor(basename(path), levels=rv$regions),
+                   Var=factor(files[i, 1], levels=variables),
+                   Season=factor(files[i, 4], levels=seasons)) %>%
+            select(RCP, Model, Region, Var, Season, Year, Val, Prob)
+    }
+    x <- bind_rows(x) %>% rvtable
   }
   if(identical(files(), rv$current_files) & 
      identical(regions_selected(), rv$current_regions) & identical(input$cru, rv$cru)){
@@ -106,9 +113,6 @@ observeEvent(input$go_btn, {
   }
   if(rv$load_new_files){
     region_paths <- file.path(dataloc, "clim_2km_seasonal", input$mapset, regions_selected())
-    progress <- shiny::Progress$new()
-    on.exit(progress$close())
-    progress$set(1, message="Loading data...", detail=NULL)
     rv$d <- map(region_paths, ~load_files(.x, files(), data_source)) %>% bind_rows  %>% droplevels
     rv$current_files <- files()
     rv$current_regions <- regions_selected()
