@@ -143,10 +143,10 @@ shinyServer(function(input, output, session) {
   })
   
   d <- reactive({
-    req(d_sub())
+    input$go_btn
     isolate({
       set.seed(1)
-      #req(d_sub())
+      req(d_sub())
       m <- input$marginalize
       if(!is.null(m) && !"" %in% m){
         m <- sort(m)
