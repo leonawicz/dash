@@ -127,28 +127,26 @@ shinyServer(function(input, output, session) {
     input$go_btn
     isolate({
       if(is.null(rv$d)) return()
-      withProgress({
-        dots <- c("RCP", "Model", "Region", "Var", "Season", "Year", "Val", "Prob")
-        if(noData()){
-          x <- slice(rv$d, 0)
-        } else {
-          getSubset <- function(x) filter(x, 
-            RCP %in% c("Historical", i()[[1]]) & Model %in% c(cru, i()[[2]]) &
-              Region %in% i()[[3]] & Season %in% i()[[4]] &
-              Year >= i()[[5]][1] & Year <= i()[[5]][2]) %>%
-            select_(.dots=dots)
-          x <- getSubset(rv$d)
-        }
-        x %>% droplevels
-      }, message="Subsetting data...", value=1)
+      dots <- c("RCP", "Model", "Region", "Var", "Season", "Year", "Val", "Prob")
+      if(noData()){
+        x <- slice(rv$d, 0)
+      } else {
+        getSubset <- function(x) filter(x, 
+          RCP %in% c("Historical", i()[[1]]) & Model %in% c(cru, i()[[2]]) &
+            Region %in% i()[[3]] & Season %in% i()[[4]] &
+            Year >= i()[[5]][1] & Year <= i()[[5]][2]) %>%
+          select_(.dots=dots)
+        x <- getSubset(rv$d)
+      }
+      x %>% droplevels
     })
   })
   
   d <- reactive({
-    input$go_btn
+    req(d_sub())
     isolate({
       set.seed(1)
-      req(d_sub())
+      #req(d_sub())
       m <- input$marginalize
       if(!is.null(m) && !"" %in% m){
         m <- sort(m)
@@ -158,15 +156,16 @@ shinyServer(function(input, output, session) {
         if(!length(m)) m <- NULL
       }
       d.args <- if(input$variable=="pr") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
-      s.args <- list(n=1000)
-      progress <- shiny::Progress$new()
-      on.exit(progress$close())
+      s.args <- list(n=100)
       x <- d_sub() %>% split(.$Year) %>% map(~rvtable(.x))
       n.steps <- length(x)
       step <- 0
+      progress <- shiny::Progress$new()
+      on.exit(progress$close())
+      #Sys.sleep(1)
       if(!is.null(m) && !"" %in% m){
         msg <- "Integrating variables..."
-        progress$set(0, msg, detail=NULL)
+        progress$set(0, message=msg, detail=NULL)
         n.steps.marginal <- if(length(m)) n.steps*length(m) else n.steps
         for(i in seq_along(m)){
           for(j in seq_along(x)){
@@ -183,7 +182,7 @@ shinyServer(function(input, output, session) {
       for(j in seq_along(x)){
         step <- step + 1
         progress$inc(1/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
-        x[[j]] <- sample_rvtable(x[[j]], n=100)
+        x[[j]] <- sample_rvtable(x[[j]], n=s.args$n)
       }
       x <- bind_rows(x)
       if(nrow(x) > 0){
@@ -217,7 +216,7 @@ shinyServer(function(input, output, session) {
   })
   
   plot_dist <- reactive({
-    input$go_btn
+    d()
     input$plot_btn
     isolate({
       distPlot(d(), primeAxis(), clrby(), colorvec(), alpha_den(), 
@@ -225,7 +224,7 @@ shinyServer(function(input, output, session) {
     })
   })
   plot_ts <- reactive({
-    input$go_btn
+    d()
     input$plot_btn
     isolate({
       tsPlot(d(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
@@ -233,7 +232,7 @@ shinyServer(function(input, output, session) {
     })
   })
   plot_dec <- reactive({
-    input$go_btn
+    d()
     input$plot_btn
     isolate({
       decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
