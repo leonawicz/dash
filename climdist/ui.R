@@ -1,3 +1,4 @@
+library(shinycssloaders)
 faq <- source("faq.R", local=TRUE)[[1]]
 
 function(request){
@@ -64,7 +65,7 @@ function(request){
                     div(id="plot-container",
                       leafletOutput("Map", width="100%", height="400px"),
                       conditionalPanel("output.Map == null", 
-                        h4("Loading map", style="position: absolute; left: 0; top: 35%; right: 0; text-align: center;"),
+                        h4("Loading map", style="position: absolute; left: 0; top: 32%; right: 0; text-align: center;"),
                         tags$img(src="spinner.gif", id="loading-spinner")
                       )
                     )
@@ -129,17 +130,23 @@ function(request){
               uiOutput("statBoxes1"),
               fluidRow(box(
                 column(5,
-                  plotOutput("dist_plot", height="auto")
+                  conditionalPanel("output.dist_plot !== null", 
+                    withSpinner(plotOutput("dist_plot", height="auto"), type = 1)
+                  )
                 ),
                 column(7,
-                  plotOutput("ts_plot", height="auto")
+                  conditionalPanel("output.ts_plot !== null", 
+                    withSpinner(plotOutput("ts_plot", height="auto"), type = 1)
+                  )
                 ),
                 title="Period density and annual observations", width=12, collapsible=TRUE
               )),
               uiOutput("statBoxes2"),
               fluidRow(box(
                 column(12,
-                  plotOutput("dec_plot", height="auto")
+                  conditionalPanel("output.dec_plot !== null", 
+                    withSpinner(plotOutput("dec_plot", height="auto"), type = 1)
+                  )
                 ),
                 title="Decadal distributions: box plots and observations", width=12, collapsible=TRUE
               ))
