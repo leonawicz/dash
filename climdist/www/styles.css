@@ -22,9 +22,15 @@
   margin-top: -33px;  /* half of the spinner's height */
   margin-left: -33px; /* half of the spinner's width */
 }
-#plot.recalculating {
+#Map.recalculating {
   z-index: -2;
 }
+
+.toast-top-center { 
+   top: 430px;   
+   margin: 0 auto;
+   left: 137px;   
+ }
 
 .btn-go { 
   color: #ffffff; 
