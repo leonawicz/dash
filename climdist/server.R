@@ -160,8 +160,8 @@ shinyServer(function(input, output, session) {
       x <- d_sub()
       merge_vars <- !is.null(m) && !"" %in% m
       if(merge_vars & cru %in% i()[[2]]){
-        composite <- "Composite GCM"
-        x.cru <- filter(x, Model==cru) %>% mutate(Model=factor(Model, levels=c(cru, composite))) %>% 
+        lev.models <- if("Model" %in% m) c(cru, "Composite GCM") else i()[[2]]
+        x.cru <- filter(x, Model==cru) %>% mutate(Model=factor(Model, levels=lev.models)) %>% 
           split(.$Year) %>% map(~rvtable(.x))
         x <- filter(x, Model!=cru)
       }
@@ -185,7 +185,13 @@ shinyServer(function(input, output, session) {
       }
       if(merge_vars & cru %in% i()[[2]]){
         x.cru <- bind_rows(x.cru)
-        x <- bind_rows(x) %>% mutate(Model=factor(composite, levels=c(cru, composite)))
+        x <- bind_rows(x) %>% ungroup()
+        if("Model" %in% m) x <- mutate(x, Model=factor(lev.models[-1], levels=lev.models))
+        if("RCP" %in% m){
+          lev.rcps <- c("Historical", "Projected")
+          x.cru <- mutate(x.cru, RCP=factor(lev.rcps[1], levels=lev.rcps))
+          x <- mutate(x, RCP=factor(lev.rcps[2], lev.rcps))
+        }
         x <- bind_rows(x.cru, x) %>% split(.$Year) %>% map(~rvtable(.x))
       }
       step <- 0
