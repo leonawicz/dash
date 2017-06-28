@@ -46,7 +46,7 @@ function(request){
                 h4("Plot options"),
                 fluidRow(
                   column(4,
-                    sliderInput("alpha_den", "Period density transparency", 0.1, 1, 1, 0.1, sep="", width="100%"),
+                    sliderInput("alpha_den", "Period density transparency", 0.1, 1, 0.5, 0.1, sep="", width="100%"),
                     selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%")
                   ),
                   column(4, 
@@ -55,7 +55,8 @@ function(request){
                   ),
                   column(4,
                     sliderInput("alpha_ts", "Annual series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%"),
-                    checkboxInput("show_points", "Show annual observations", FALSE, width="100%")
+                    checkboxInput("show_annual_means", "Show annual means", TRUE, width="100%"),
+                    checkboxInput("show_annual_obs", "Show annual observations", FALSE, width="100%")
                   )
                 )
               ),
@@ -73,7 +74,7 @@ function(request){
                   column(7,
                     fluidRow(
                      column(4,
-                       selectInput("variable", "Climate variable", choices=variables, selected=variables[1], width="100%")
+                       selectInput("variable", "Climate variable", choices=variables, selected=variables[2], width="100%")
                      ),
                      column(8,
                        uiOutput("mapset_regions")
@@ -100,12 +101,8 @@ function(request){
                          selectInput("marginalize", "Merge distributions across", 
                            choices=c("", "RCPs"="RCP", "Models"="Model"), selected="", multiple=TRUE, width="100%")
                        ),
-                       column(4,
-                         uiOutput("ColorBy")
-                       ),
-                       column(4,
-                         uiOutput("FacetBy")
-                       )
+                       column(4, selectInput("clrby", "Color by", clrfctopts, width="100%")),
+                       column(4, selectInput("fctby", "Facet by", clrfctopts, width="100%"))
                     ),
                     fluidRow(
                      column(4, 
