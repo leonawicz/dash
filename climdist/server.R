@@ -33,18 +33,6 @@ shinyServer(function(input, output, session) {
     input$regions
   })
   
-  output$ColorBy <- renderUI({
-    x <- c("", "RCP", "Model", "Season", "Region")
-    y <- input$marginalize
-    x <- if(is.null(y)) x else setdiff(x, y)
-    selectInput("clrby", "Color by", choices=x, selected="", width="100%")
-  })
-  output$FacetBy <- renderUI({
-    x <- c("", "RCP", "Model", "Season", "Region")
-    y <- input$marginalize
-    x <- if(is.null(y)) x else setdiff(x, y)
-    selectInput("fctby", "Facet by", choices=x, selected="", width="100%")
-  })
   alpha_den <- reactive({ if(is.null(input$alpha_den)) 1 else input$alpha_den })
   alpha_ts <- reactive({ if(is.null(input$alpha_ts)) 0.1 else input$alpha_ts })
   alpha_dec <- reactive({ if(is.null(input$alpha_dec)) 0.1 else input$alpha_dec })
@@ -101,7 +89,7 @@ shinyServer(function(input, output, session) {
   })
   i <- reactive({
     cur_gcms <- input$gcms
-    if(!is.null(input$cru) && input$cru) cur_gcms <- c(cru, cur_gcms)
+    if(!is.null(input$cru) && input$cru && input$yrs[1] <= cru.max.yr) cur_gcms <- c(cru, cur_gcms)
     list(rcps=input$rcps, gcms=cur_gcms, 
       reg=regions_selected(), seasons=input$seasons, yrs=input$yrs,
       reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
@@ -147,7 +135,7 @@ shinyServer(function(input, output, session) {
     isolate({
       set.seed(1)
       req(d_sub())
-      m <- input$marginalize
+      m <- input$marginalize # determine need for marginalization
       if(!is.null(m) && !"" %in% m){
         m <- sort(m)
         m.lev <- map(m, ~levels(d_sub()[[.x]])) %>% 
@@ -155,12 +143,18 @@ shinyServer(function(input, output, session) {
         m <- m[which(map_lgl(m.lev, ~length(.x) > 1))]
         if(!length(m)) m <- NULL
       }
+      merge_vars <- !is.null(m) && !"" %in% m
+      composite <- "Composite GCM"
+      lev.rcps <- NULL
+      if(input$yrs[1] < rcp.min.yr || (cru %in% i()[[2]] && input$yrs[1] <= cru.max.yr))
+        lev.rcps <- "Historical"
+      if(input$yrs[2] >= rcp.min.yr) lev.rcps <- c(lev.rcps, "Projected")
+      
       d.args <- if(input$variable=="pr") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
       s.args <- list(n=100)
       x <- d_sub()
-      merge_vars <- !is.null(m) && !"" %in% m
-      if(merge_vars & cru %in% i()[[2]]){
-        lev.models <- if("Model" %in% m) c(cru, "Composite GCM") else i()[[2]]
+      if(merge_vars & cru %in% i()[[2]]){ # split CRU from GCMs
+        lev.models <- if("Model" %in% m) c(cru, composite) else i()[[2]]
         x.cru <- filter(x, Model==cru) %>% mutate(Model=factor(Model, levels=lev.models)) %>% 
           split(.$Year) %>% map(~rvtable(.x))
         x <- filter(x, Model!=cru)
@@ -170,7 +164,7 @@ shinyServer(function(input, output, session) {
       step <- 0
       progress <- shiny::Progress$new()
       on.exit(progress$close())
-      if(merge_vars){
+      if(merge_vars){ # marginalize (excludes CRU and historical GCM data)
         msg <- "Integrating variables..."
         progress$set(0, message=msg, detail=NULL)
         n.steps.marginal <- if(length(m)) n.steps*length(m) else n.steps
@@ -183,35 +177,41 @@ shinyServer(function(input, output, session) {
           }
         }
       }
-      if(merge_vars & cru %in% i()[[2]]){
+      if(merge_vars & cru %in% i()[[2]]){ # update factor levels (with CRU data)
         x.cru <- bind_rows(x.cru)
         x <- bind_rows(x) %>% ungroup()
         if("Model" %in% m) x <- mutate(x, Model=factor(lev.models[-1], levels=lev.models))
         if("RCP" %in% m){
-          lev.rcps <- c("Historical", "Projected")
-          x.cru <- mutate(x.cru, RCP=factor(lev.rcps[1], levels=lev.rcps))
-          x <- mutate(x, RCP=factor(lev.rcps[2], lev.rcps))
+          if(length(lev.rcps)==1) lev.rcps <- rep(lev.rcps, 2) # historical always present
+          x.cru <- mutate(x.cru, RCP=factor(lev.rcps[1], levels=unique(lev.rcps)))
+          x <- mutate(x, RCP=factor(ifelse(Year < rcp.min.yr, lev.rcps[1], lev.rcps[2]), unique(lev.rcps)))
         }
         x <- bind_rows(x.cru, x) %>% split(.$Year) %>% map(~rvtable(.x))
       }
       step <- 0
       msg <- "Sampling distributions..."
       progress$set(0, message=msg, detail=NULL)
-      for(j in seq_along(x)){
+      for(j in seq_along(x)){ # sample distributions
         step <- step + 1
         if(step %% 5 == 0 || step==n.steps) 
           progress$set(step/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
         x[[j]] <- sample_rvtable(x[[j]], n=s.args$n)
       }
-      x <- bind_rows(x)
-      if(nrow(x) > 0){
+      x <- bind_rows(x) %>% ungroup()
+      if(merge_vars & !cru %in% i()[[2]]){ # update factor levels (no CRU data)
+        if("Model" %in% m) x <- mutate(x, Model=factor(composite, levels=composite))
+        if("RCP" %in% m)
+          if(length(lev.rcps)==1) lev.rcps <- rep(lev.rcps, 2) # projected always present
+          x <- mutate(x, RCP=factor(ifelse(Year < rcp.min.yr, lev.rcps[1], lev.rcps[2]), unique(lev.rcps)))
+      }
+      if(nrow(x) > 0){ # unit conversion
         if(metric()){
           x <- mutate(x, Val=ifelse(Var=="pr", round(Val), round(Val, 1)))
         } else {
           x <- mutate(x, Val=ifelse(Var=="pr", round(Val/25.4, 3), round((9/5)*Val + 32, 1)))
         }
         if(input$variable=="pr") x$Val[x$Val < 0] <- 0
-        x <- mutate(x, Decade=factor(
+        x <- mutate(x, Decade=factor( # Add decade factor column
           paste0(Year - Year %% 10, "s"), levels=paste0(unique(Year - Year %% 10), "s")))
       }
       x
@@ -240,7 +240,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       distPlot(d(), primeAxis(), clrby(), colorvec(), alpha_den(), 
-               fctby(), facet_scales(), yrs(), "density", preventPlot()) 
+        fctby(), facet_scales(), yrs(), "density", preventPlot()) 
     })
   })
   plot_ts <- reactive({
@@ -248,7 +248,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       tsPlot(d(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-             fctby(), facet_scales(), input$show_points, preventPlot())
+        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot())
     })
   })
   plot_dec <- reactive({
@@ -256,7 +256,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
-              fctby(), facet_scales(), input$bptype, preventPlot())
+        fctby(), facet_scales(), input$bptype, preventPlot())
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())
