@@ -101,7 +101,7 @@ shinyServer(function(input, output, session) {
   })
   i <- reactive({
     cur_gcms <- input$gcms
-    if(!is.null(input$cru) && input$cru) cur_gcms <- c("CRU 4.0", cur_gcms)
+    if(!is.null(input$cru) && input$cru) cur_gcms <- c(cru, cur_gcms)
     list(rcps=input$rcps, gcms=cur_gcms, 
       reg=regions_selected(), seasons=input$seasons, yrs=input$yrs,
       reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
@@ -124,7 +124,6 @@ shinyServer(function(input, output, session) {
   noData <- reactive({ any(sapply(i(), is.null)) || is.null(rv$d) })
   
   d_sub <- reactive({
-    input$mapset
     rv$go
     isolate({
       if(is.null(rv$d)) return()
@@ -133,7 +132,7 @@ shinyServer(function(input, output, session) {
         x <- slice(rv$d, 0)
       } else {
         getSubset <- function(x) filter(x, 
-          RCP %in% c("Historical", i()[[1]]) & Model %in% c(cru, i()[[2]]) &
+          RCP %in% c("Historical", i()[[1]]) & Model %in% i()[[2]] &
             Region %in% i()[[3]] & Season %in% i()[[4]] &
             Year >= i()[[5]][1] & Year <= i()[[5]][2]) %>%
           select_(.dots=dots)
@@ -144,7 +143,6 @@ shinyServer(function(input, output, session) {
   })
   
   d <- reactive({
-    input$mapset
     rv$go
     isolate({
       set.seed(1)
@@ -159,13 +157,20 @@ shinyServer(function(input, output, session) {
       }
       d.args <- if(input$variable=="pr") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
       s.args <- list(n=100)
-      x <- d_sub() %>% split(.$Year) %>% map(~rvtable(.x))
+      x <- d_sub()
+      merge_vars <- !is.null(m) && !"" %in% m
+      if(merge_vars & cru %in% i()[[2]]){
+        composite <- "Composite GCM"
+        x.cru <- filter(x, Model==cru) %>% mutate(Model=factor(Model, levels=c(cru, composite))) %>% 
+          split(.$Year) %>% map(~rvtable(.x))
+        x <- filter(x, Model!=cru)
+      }
+      x <- x %>% split(.$Year) %>% map(~rvtable(.x))
       n.steps <- length(x)
       step <- 0
       progress <- shiny::Progress$new()
       on.exit(progress$close())
-      #Sys.sleep(1)
-      if(!is.null(m) && !"" %in% m){
+      if(merge_vars){
         msg <- "Integrating variables..."
         progress$set(0, message=msg, detail=NULL)
         n.steps.marginal <- if(length(m)) n.steps*length(m) else n.steps
@@ -173,17 +178,23 @@ shinyServer(function(input, output, session) {
           for(j in seq_along(x)){
             step <- step + 1
             detail <- paste0("Marginalizing over ", m[i], "s: ", round(100*step/n.steps.marginal), "%")
-            progress$inc(1/n.steps.marginal, msg, detail)
+            if(step %% 5 == 0 || step==n.steps.marginal) progress$set(step/n.steps.marginal, msg, detail)
             x[[j]] <- marginalize(x[[j]], m[i], density.args=d.args, sample.args=s.args)
           }
         }
+      }
+      if(merge_vars & cru %in% i()[[2]]){
+        x.cru <- bind_rows(x.cru)
+        x <- bind_rows(x) %>% mutate(Model=factor(composite, levels=c(cru, composite)))
+        x <- bind_rows(x.cru, x) %>% split(.$Year) %>% map(~rvtable(.x))
       }
       step <- 0
       msg <- "Sampling distributions..."
       progress$set(0, message=msg, detail=NULL)
       for(j in seq_along(x)){
         step <- step + 1
-        progress$inc(1/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
+        if(step %% 5 == 0 || step==n.steps) 
+          progress$set(step/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
         x[[j]] <- sample_rvtable(x[[j]], n=s.args$n)
       }
       x <- bind_rows(x)

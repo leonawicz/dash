@@ -16,7 +16,6 @@ observeEvent(input$mapset, {
   } else {
     rv[["regions"]] <- locs[[input$mapset]]
     rv[["shp"]] <- shp.list[[input$mapset]]
-    rv$d <- NULL
   }
 })
 
