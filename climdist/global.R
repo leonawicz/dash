@@ -29,6 +29,7 @@ axis_scales <- c("Fixed"="fixed", "Free"="free", "Free X"="free_x", "Free Y"="fr
 valid_input_selection <- paste(
   paste(paste0("input.", c("regions", "rcps", "seasons")), "!= null", collapse=" & "), 
   " & (input.gcms != null || input.cru ==true)")
+clrfctopts <- c("", "RCP", "Model", "Season", "Region")
 
 source("override.R")
 source("utils.R")
