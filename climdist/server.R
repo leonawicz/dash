@@ -385,12 +385,13 @@ shinyServer(function(input, output, session) {
   output$dataLoadedSidebar <- renderUI({
     if(noData()) return()
     tagList(
+      hr(style="margin: 12px;"),
       actionButton("help", "Take tour", style=action_btn_style, icon=icon("question-circle")),
       #bookmarkButton(style=action_btn_style)
       actionButton("fake", "Bookmark", style=action_btn_style, icon=icon("link")), # placeholder
       bsTooltip("fake", "Note: Server-side bookmarking not yet available.", placement="right", options=list(container="body")),
-      hr(style="margin: 15px;"),
-      h5(strong("Download current data set"), style="margin: 0px 10px 0px 10px;"),
+      hr(style="margin: 12px;"),
+      h5(strong("Download current data set"), style="margin: 0px 12px 0px 12px;"),
       radioButtons("filetype", "File type:", c("csv", "json", "rds"), "rds", inline=T),
       downloadButton('downloadData', 'Download', style=action_btn_style),
       bsTooltip("filetype", "The csv and json file types are universal. The rds file type is familiar, specific and convenient to R users and results in a much smaller file size. If your data selections result in a large data set, rds is highly recommended. A 1.5 MB rds file is equivalent to ~100 MB json file for example.",
