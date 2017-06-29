@@ -21,12 +21,7 @@ function(request){
         menuItem("Climate", icon=icon("sliders"), tabName="climate"),
         menuItem("Information", icon=icon("info-circle"), tabName="info")
       ),
-      conditionalPanel("output.Map != null",
-        actionButton("help", "Take tour", style=action_btn_style, icon=icon("question-circle")),
-        #bookmarkButton(style=action_btn_style)
-        actionButton("fake", "Bookmark", style=action_btn_style, icon=icon("link")), # placeholder
-        bsTooltip("fake", "Note: Server-side bookmarking not yet available.", placement="right", options=list(container="body"))
-      ),
+      uiOutput("dataLoadedSidebar"),
       tags$footer(
         p(a(href="http://snap.uaf.edu", target="_blank",
           tags$img(src="SNAPDB_acronym_75px.png", width="20%", alt="SNAP Dashboards"), style="padding: 5px; margin: 0px;"),
