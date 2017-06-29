@@ -59,17 +59,31 @@ tour.text <- c(
   "14"="Additional settings pertaining to plot formatting can be found here.",
   "15"="When the only changes made pertain to plot formatting, regenerate plots and statistics without reloading redundant data.
   This saves time, especially with large data sets or when computing marginal distributions as part of your data specifications.
-  Rebuilding distributions is only necessary when data selections have changed."
+  Rebuilding distributions is only necessary when data selections have changed.",
+  "16"="Statistics are derived from the full spatial climate probability densities for the selected geographic region(s).
+  The first row of statistics are based on annual data over the full selected time period.",
+  "17"="The density plot shows climate probability distributions for the aggregate time period.",
+  "18"="The annual time series shows annual mean climate values with a fitted regression line and confidence band by default.
+  Plot settings can be changed to show the distribution of individual annaul observations in place of or in addition to mean values.",
+  "19"="The second row of statistics relates to decadal mean change and derive from the decadal distributions
+  of annual climate values across space and within each decade.
+  The first two statistics show the change between the first and last selected decades.
+  Percent change only applies to precipitation.
+  The next two show which pairs of consecutive decades account for the smallest and largest decade-to-decade change.
+  The last two show which decades have the smallest and largest climate values on average.",
+  "20"="Decadal boxplots show the distribution of climate values in space and time per decade.
+  By default, observations are shown as an overlay. The combination of boxplots and unique observations can be changed in the plot settings."
 )
 
-tour.pos <- c("left", "right", "bottom", rep("left", 12))
+tour.pos <- c("left", "right", "bottom", rep("left", 12), "top", rep(c("top", "left"), 2))
 
 tour.element <- c(
   "#shiny-tab-climate", "#mapset + .selectize-control", "#Map", "#regions + .selectize-control",
   "#variable + .selectize-control",
   "#rcps + .selectize-control", "#gcms + .selectize-control", "#seasons + .selectize-control", ".js-irs-3", 
   "#marginalize + .selectize-control", "#clrby + .selectize-control", "#fctby + .selectize-control",
-  "#go_btn", "#settings_btn", "#plot_btn"
+  "#go_btn", "#settings_btn", "#plot_btn",
+  "#statBoxes1", "#dist_plot", "#ts_plot", "#statBoxes2", "#dec_plot"
 )
 
 steps <- reactive({
