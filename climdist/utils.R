@@ -64,3 +64,24 @@ interact <- function(x){
   if(!is.null(fby)) g <- g + facet_wrap(as.formula(paste0("~", fby)), scales=scales)
   g
 }
+
+.app_img_link <- function(app_url, img_url, title, subtitle, height=200){
+  HTML(paste0(
+    '<div class="img_link_wrap">
+      <img class="img_app" src="', img_url, '" width="100%" height="', height, '"/>
+      <a href="', app_url, '" style="color:white;" target="_blank"
+      <div class="img_hover_layer">
+        <div class="img_hover">
+          <h3><p>', title, '</p></h3>
+          <h4><p class="img_hover">', subtitle, '</p></h4>
+        </div>
+      </div>
+      </a>')) # contextual, must remove a closing div with mutliple inline calls
+}
+
+app_img_links <- function(app_url, img_url, title, subtitle, height=200, min.width=300, max.width=400, col.width=4){
+  x <- purrr::map(seq_along(app_url),
+    ~column(col.width, .app_img_link(app_url[.x], img_url[.x], title[.x], subtitle[.x], height),
+            style=paste0("min-width: ", min.width, "px; max-width: ", max.width, "px; padding:5px;")))
+  fluidRow(x, style="padding: 10px;")
+}
