@@ -1,4 +1,5 @@
 library(shinycssloaders)
+other_apps <- source("otherapps.R", local=TRUE)[[1]]
 faq <- source("faq.R", local=TRUE)[[1]]
 
 function(request){
@@ -34,7 +35,7 @@ function(request){
       )
     ),
     dashboardBody(
-      includeCSS("www/styles.css"),
+      includeCSS(css),
       tabItems(
         tabItem(tabName="climate",
               bsModal("settings", "Additional settings", "settings_btn", size="large",
