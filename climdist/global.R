@@ -1,3 +1,4 @@
+css <- "https://gist.githubusercontent.com/leonawicz/24ed656f63d4a889ad7043bc5436a641/raw/050538f0c78616ac53a03ebebe9c256d33f9053f/shiny_app_styles.css"
 ptm <- proc.time()
 library(rintrojs)
 library(leaflet)
