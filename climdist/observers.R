@@ -89,8 +89,10 @@ observe({
   rv$go
   isolate({
     if(!rv$intro_toast_done){
-      toastr_info(title="Explore spatial climate distributions", 
-        "Update your selections and press 'Build distributions' to load new data.", position="top-center", preventDuplicates=TRUE)
+      toastr_info(title="<h2>Explore spatial climate distributions</h2>", 
+        "<h4><p style='text-align:justify;'>Press 'Build distributions' to reload after any time you update your data selections.</p></h4>
+        <h4><p style=text-align:justify;>Launch the interactive tour from the sidebar for a detailed overview.</p></h4>",
+        timeOut=10000, position="top-center", closeButton=TRUE, preventDuplicates=TRUE)
       rv$intro_toast_done <- TRUE
     }
   load_files <- function(path, files, src="local"){
