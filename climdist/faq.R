@@ -43,7 +43,7 @@ bsCollapse(id="faq",
       that emit large quantities of green house gases. 
       RCP 6.0 lies somewhere in between.", style="text-align:justify"), 
       style="info"),
-  bsCollapsePanel("How did you make this app?",
+  bsCollapsePanel("How did you make this app? Are other apps available?",
     p("This app is written in the", 
       a("R programming language", href="https://www.r-project.org/", target="_blank"), "and built with the", 
       a("Shiny", href="https://shiny.rstudio.com/", target="_blank"), "web application framework for R.
@@ -53,6 +53,10 @@ bsCollapse(id="faq",
       public outreach and scientific communication, directly supporting scientific research,
       and organizational data access and analytics.", 
       a("Contact us", href="https://www.snap.uaf.edu/about/contact/", target="_blank"), "for details.",
-      style="text-align: justify;"), 
+      style="text-align: justify;"),
+    h3("Other R Shiny web applications"),
+    p("Many additional Shiny apps are publicly available from SNAP. Here are just a few examples.",
+      style="text-align: justify;"),
+    other_apps,
     style="info")
 )
