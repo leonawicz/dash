@@ -16,11 +16,26 @@ tolpal <- function(n){
   )
 }
 
+samplesize_factor <- function(x){
+  if("RCP" %in% names(x)){
+    n.rcps <- nlevels(x$RCP)
+    if("Historical" %in% levels(x$RCP) && n.rcps > 1) n.rcps <- n.rcps - 1
+  } else n.rcps <- 1
+  if("Model" %in% names(x)){
+    n.models <- nlevels(x$Model)
+    if(cru %in% levels(x$Model) && n.models > 1) n.models <- n.models - 1
+  } else n.models <- 1
+  n.rcps * n.models
+}
+
 plottheme <- theme(panel.grid.major = element_line(size = .5, color = "grey"),
         plot.title=element_text(hjust=0.5),
         axis.line=element_line(size=.7, color="black"),
         axis.ticks.length=unit(0.35,"cm"),
         legend.position="bottom",
+        legend.justification = "right",
+        legend.title=element_blank(),
+        legend.text=element_text(size=14),
         text = element_text(size=18),
         panel.spacing.x=unit(0.25,"cm"),
         plot.margin=unit(c(0.5, 1, 0.5, 0.5),"cm"),

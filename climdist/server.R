@@ -4,6 +4,7 @@ regions_list_default <- locs[[default_mapset]]
 regions_selected_default <- regions_list_default[1]
 cru.max.yr <- 2015
 rcp.min.yr <- 2006
+limit.sample <- TRUE # shrink final sampling by a factor of number of RCPs tmes number of GCMs
 
 shinyServer(function(input, output, session) {
   
@@ -151,13 +152,17 @@ shinyServer(function(input, output, session) {
       if(input$yrs[2] >= rcp.min.yr) lev.rcps <- c(lev.rcps, "Projected")
       
       d.args <- if(input$variable=="pr") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
-      s.args <- list(n=100)
+      s.args <- list(n=100) # marginalize steps
+      n.samples <- 100 # final sampling
       x <- d_sub()
       if(merge_vars & cru %in% i()[[2]]){ # split CRU from GCMs
         lev.models <- if("Model" %in% m) c(cru, composite) else i()[[2]]
         x.cru <- filter(x, Model==cru) %>% mutate(Model=factor(Model, levels=lev.models)) %>% 
           split(.$Year) %>% map(~rvtable(.x))
         x <- filter(x, Model!=cru)
+      }
+      if(!merge_vars){
+        n.factor <- if(limit.sample) samplesize_factor(x) else 1
       }
       x <- x %>% split(.$Year) %>% map(~rvtable(.x))
       n.steps <- length(x)
@@ -186,16 +191,17 @@ shinyServer(function(input, output, session) {
           x.cru <- mutate(x.cru, RCP=factor(lev.rcps[1], levels=unique(lev.rcps)))
           x <- mutate(x, RCP=factor(ifelse(Year < rcp.min.yr, lev.rcps[1], lev.rcps[2]), unique(lev.rcps)))
         }
+        n.factor <- if(limit.sample) samplesize_factor(x) else 1
         x <- bind_rows(x.cru, x) %>% split(.$Year) %>% map(~rvtable(.x))
       }
       step <- 0
       msg <- "Sampling distributions..."
-      progress$set(0, message=msg, detail=NULL)
+      progress$set(0, message=msg, detail=NULL) # adjust sample based on number of RCPs and GCMs
       for(j in seq_along(x)){ # sample distributions
         step <- step + 1
         if(step %% 5 == 0 || step==n.steps) 
           progress$set(step/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
-        x[[j]] <- sample_rvtable(x[[j]], n=s.args$n)
+        x[[j]] <- sample_rvtable(x[[j]], n=max(10, round(n.samples/n.factor)))
       }
       x <- bind_rows(x) %>% ungroup()
       if(merge_vars & !cru %in% i()[[2]]){ # update factor levels (no CRU data)
@@ -256,7 +262,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
-        fctby(), facet_scales(), input$bptype, preventPlot())
+        fctby(), facet_scales(), input$bptype, limit.sample, preventPlot())
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())
