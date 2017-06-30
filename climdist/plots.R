@@ -16,14 +16,16 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, ty
     g <- g + geom_histogram(aes_string(fill=clrby), colour=clr, position="dodge", alpha=alpha)
   }
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
-  g + theme_bw(base_size=14) + plottheme + labs(x=xlb, y=ylb) + guides(colour=lgd_alpha)
+  g + theme_bw(base_size=18) + plottheme + labs(x=xlb, y=ylb) + guides(colour=lgd_alpha)
     
 }
 
-tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent){
+tsPlot <- function(data, yrs, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent){
   if(prevent) return()
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby)
+  n.facets <- if(is.null(fctby)) 1 else length(unique(data[[fctby]]))
+  breaks <- get_breaks(yrs, n.facets)
   g <- ggplot(data=data, aes_string("Year", "Val", colour=clrby, fill=clrby))
   if(ann_obs) g <- g + geom_point(size=3, shape=21, color="black", alpha=alpha, position=pos)
   g <- g + geom_smooth(method="lm", size=1) + 
@@ -31,7 +33,9 @@ tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means
     geom_smooth(method="lm", size=1, se=FALSE)
   if(ann_means) g <- g + stat_summary(fun.y=mean, geom="line") + stat_summary(fun.y=mean, geom="point")
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
-  g +  theme_bw(base_size=14) + plottheme + labs(y=ylb) + guides(fill=lgd_alpha)
+  g +  theme_bw(base_size=18) + plottheme + theme(axis.text.x=element_text(angle=45, hjust=1)) + 
+    labs(y=ylb) + guides(fill=lgd_alpha) +
+    scale_x_continuous(limits=range(yrs), expand=c(0, 0), breaks=breaks, labels=breaks, minor_breaks=yrs)
 }
 
 decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, prevent){
@@ -58,5 +62,6 @@ decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, pr
   }
   
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
-  g + theme_bw(base_size=14) + plottheme + labs(y=ylb) + guides(fill=lgd_alpha)
+  g + theme_bw(base_size=18) + plottheme + theme(axis.text.x=element_text(angle=45, hjust=1)) +
+    labs(y=ylb) + guides(fill=lgd_alpha)
 }

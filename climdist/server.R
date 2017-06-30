@@ -247,7 +247,7 @@ shinyServer(function(input, output, session) {
     d()
     input$plot_btn
     isolate({
-      tsPlot(d(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
+      tsPlot(d(), yrs(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
         fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot())
     })
   })

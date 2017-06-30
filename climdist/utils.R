@@ -21,10 +21,28 @@ plottheme <- theme(panel.grid.major = element_line(size = .5, color = "grey"),
         axis.line=element_line(size=.7, color="black"),
         axis.ticks.length=unit(0.35,"cm"),
         legend.position="bottom",
-        text = element_text(size=14),
+        text = element_text(size=18),
         panel.spacing.x=unit(0.25,"cm"),
         plot.margin=unit(c(0.5, 1, 0.5, 0.5),"cm"),
         strip.text=element_text(size=14))
+
+get_breaks <- function(yrs, n.facets=1){
+  n <- length(yrs)
+  if(n.facets==1) cols <- 1 else 
+    if(n.facets %in% c(2,4)) cols <- 2 else cols <- 3
+  if(n <= 15){
+    if(cols < 2) return(yrs) else return(seq(yrs[1], yrs[n], by=2))
+  }
+  if(n <= 25){
+    if(cols < 2) return(yrs) else return(seq(yrs[1], yrs[n], by=2))
+  }
+  if(n <= 50/cols) step <- 5 else 
+    if(n <= 100/cols) step <- 10 else step <- 20
+  a <- range(yrs[yrs %% step == 0])
+  a <- seq(a[1], a[2], by=step)
+  #if(a[1] - yrs[1] < )
+  unique(c(yrs[1], a, yrs[n]))
+}
 
 pTextSize <- function(x, value, margin=NULL, default.value=100){
   if(length(x) > 1) value <- c(value, rep(default.value, length(x) - 1))
