@@ -65,7 +65,7 @@ tour.text <- c(
   "17"="The density plot shows climate probability distributions for the aggregate time period.",
   "18"="The annual time series shows annual mean climate values with a fitted regression line and confidence band by default.
   Plot settings can be changed to show the distribution of individual annaul observations in place of or in addition to mean values.",
-  "19"="The second row of statistics relates to decadal mean change and derive from the decadal distributions
+  "19"="The second row of statistics relates to decadal mean change and derives from the decadal distributions
   of annual climate values across space and within each decade.
   The first two statistics show the change between the first and last selected decades.
   Percent change only applies to precipitation.
