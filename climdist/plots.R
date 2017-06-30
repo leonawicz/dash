@@ -1,6 +1,6 @@
 distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, type, prevent){
   if(prevent) return()
-  lgd_alpha <- guide_legend(override.aes=list(alpha=1))
+  lgd_rows <- 1
   if(is.null(clrby)) clr <- "white" else clr <- "black"
   ylb <- if(yrs[1]==tail(yrs, 1)) paste(yrs[1], "density") else paste(yrs[1], "-", tail(yrs, 1), "density")
   g <- ggplot(data=data, aes_string("Val"))
@@ -9,14 +9,16 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, ty
       g <- g + geom_density(fill="#A5A5A5", colour="white", alpha=alpha)
       g <- g + geom_line(colour="#3366FF", size=1, stat="density")
     } else {
+      lgd_rows <- if(nlevels(data[[clrby]]) > 2) 2 else 1
       g <- g + geom_density(aes_string(fill=clrby), colour="white", alpha=alpha)
       g <- g + geom_line(aes_string(colour=clrby), size=1, stat="density")
     }
   } else {
     g <- g + geom_histogram(aes_string(fill=clrby), colour=clr, position="dodge", alpha=alpha)
   }
+  lgd <- guide_legend(override.aes=list(alpha=1), nrow=lgd_rows)
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
-  g + theme_bw(base_size=18) + plottheme + labs(x=xlb, y=ylb) + guides(colour=lgd_alpha)
+  g + theme_bw(base_size=18) + plottheme + labs(x=xlb, y=ylb) + guides(fill=lgd)
     
 }
 
@@ -28,17 +30,20 @@ tsPlot <- function(data, yrs, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_
   breaks <- get_breaks(yrs, n.facets)
   g <- ggplot(data=data, aes_string("Year", "Val", colour=clrby, fill=clrby))
   if(ann_obs) g <- g + geom_point(size=3, shape=21, color="black", alpha=alpha, position=pos)
-  g <- g + geom_smooth(method="lm", size=1) + 
+  if(length(yrs) > 1) g <- g + geom_smooth(method="lm", size=1) + 
     geom_smooth(method="lm", colour="white", size=2, se=FALSE) + 
     geom_smooth(method="lm", size=1, se=FALSE)
-  if(ann_means) g <- g + stat_summary(fun.y=mean, geom="line") + stat_summary(fun.y=mean, geom="point")
+  if(ann_means){
+    if(length(yrs) > 1) g <- g + stat_summary(fun.y=mean, geom="line")
+    g <- g + stat_summary(fun.y=mean, geom="point")
+  }
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
   g +  theme_bw(base_size=18) + plottheme + theme(axis.text.x=element_text(angle=45, hjust=1)) + 
     labs(y=ylb) + guides(fill=lgd_alpha) +
     scale_x_continuous(limits=range(yrs), expand=c(0, 0), breaks=breaks, labels=breaks, minor_breaks=yrs)
 }
 
-decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, prevent){
+decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, limit.sample, prevent){
   if(prevent) return()
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby, dodgeable=TRUE)
@@ -54,10 +59,12 @@ decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, pr
     }
   }
   if(doStrip){
+    set.seed(1)
     if(is.null(clrby)){
-      g <- g + geom_point(shape=21, fill="black", colour="black", position=pos, alpha=alpha)
+      g <- g + geom_point(data=sample_frac(data, 0.1), shape=21, fill="black", colour="black", position=pos, alpha=alpha)
     } else {
-      g <- g + geom_point(shape=21, colour="black", position=pos, alpha=alpha)
+      n <- if(limit.sample & clrby %in% c("RCP", "Model")) nlevels(data[[clrby]]) else 1
+      g <- g + geom_point(data=sample_frac(data, 0.1*n), shape=21, colour="black", position=pos, alpha=alpha)
     }
   }
   
