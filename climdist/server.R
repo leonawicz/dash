@@ -163,6 +163,8 @@ shinyServer(function(input, output, session) {
       }
       if(!merge_vars){
         n.factor <- if(limit.sample) samplesize_factor(x) else 1
+      } else if(!cru %in% i()[[2]]){
+        n.factor <- 1
       }
       x <- x %>% split(.$Year) %>% map(~rvtable(.x))
       n.steps <- length(x)
