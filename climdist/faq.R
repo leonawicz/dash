@@ -57,6 +57,6 @@ bsCollapse(id="faq",
     h3("Other R Shiny web applications"),
     p("Many additional Shiny apps are publicly available from SNAP. Here are just a few examples.",
       style="text-align: justify;"),
-    other_apps,
+    app_showcase(drop="jfsp-v10"),
     style="info")
 )

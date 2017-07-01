@@ -1,5 +1,4 @@
 library(shinycssloaders)
-other_apps <- source("otherapps.R", local=TRUE)[[1]]
 faq <- source("faq.R", local=TRUE)[[1]]
 
 function(request){
@@ -30,7 +29,7 @@ function(request){
       )
     ),
     dashboardBody(
-      includeCSS(css),
+      includeCSS(gist_url("css")),
       tabItems(
         tabItem(tabName="climate",
               bsModal("settings", "Additional settings", "settings_btn", size="large",
@@ -172,20 +171,7 @@ function(request){
           The app exposes hundreds of gigabytes of data to the user and any slice of the data can be rapidly accessed.", style="text-align:justify"),
           h2("Frequently asked questions"),
           faq,
-          h2("Contact information"),
-          HTML('
-               <div style="clear: left;"><img src="https://www.gravatar.com/avatar/5ab20ebc3829054f8af7b1ea4a317269?s=128"
-               alt="" style="float: left; margin-right:5px" /></div>
-               <p>Matthew Leonawicz<br/>
-               Statistician | useR<br/>
-               <a href="http://leonawicz.github.io" target="_blank">Github.io</a> |
-               <a href="http://blog.snap.uaf.edu" target="_blank">Blog</a> |
-               <a href="https://twitter.com/leonawicz" target="_blank">Twitter</a> |
-               <a href="http://www.linkedin.com/in/leonawicz" target="_blank">Linkedin</a> <br/>
-               <a href="http://www.snap.uaf.edu/", target="_blank">Scenarios Network for Alaska and Arctic Planning</a>
-               </p>'
-          ),
-          p("For questions about this application, please email mfleonawicz@alaska.edu")
+          contactinfo()
         )
       )
     ),

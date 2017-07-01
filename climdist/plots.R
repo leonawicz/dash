@@ -1,4 +1,4 @@
-distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, type, prevent){
+distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, type, prevent, plottheme){
   if(prevent) return()
   lgd_rows <- 1
   if(is.null(clrby)) clr <- "white" else clr <- "black"
@@ -22,7 +22,7 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, ty
     
 }
 
-tsPlot <- function(data, yrs, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent){
+tsPlot <- function(data, yrs, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent, plottheme){
   if(prevent) return()
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby)
@@ -43,7 +43,7 @@ tsPlot <- function(data, yrs, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_
     scale_x_continuous(limits=range(yrs), expand=c(0, 0), breaks=breaks, labels=breaks, minor_breaks=yrs)
 }
 
-decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, limit.sample, prevent){
+decPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, type, limit.sample, prevent, plottheme){
   if(prevent) return()
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby, dodgeable=TRUE)

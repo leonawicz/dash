@@ -2,9 +2,12 @@ library(rvtable)
 default_mapset <- "AK-CAN"
 regions_list_default <- locs[[default_mapset]]
 regions_selected_default <- regions_list_default[1]
+cru <- "CRU 4.0"
 cru.max.yr <- 2015
 rcp.min.yr <- 2006
 limit.sample <- TRUE # shrink final sampling by a factor of number of RCPs tmes number of GCMs
+plottheme <- get_plottheme()
+source("plots.R")
 
 shinyServer(function(input, output, session) {
   
@@ -140,7 +143,7 @@ shinyServer(function(input, output, session) {
       if(!is.null(m) && !"" %in% m){
         m <- sort(m)
         m.lev <- map(m, ~levels(d_sub()[[.x]])) %>% 
-          map(~.x[!.x %in% c("Historical", "CRU 4.0")])
+          map(~.x[!.x %in% c("Historical", cru)])
         m <- m[which(map_lgl(m.lev, ~length(.x) > 1))]
         if(!length(m)) m <- NULL
       }
@@ -162,7 +165,7 @@ shinyServer(function(input, output, session) {
         x <- filter(x, Model!=cru)
       }
       if(!merge_vars){
-        n.factor <- if(limit.sample) samplesize_factor(x) else 1
+        n.factor <- if(limit.sample) samplesize_factor(x, cru) else 1
       } else if(!cru %in% i()[[2]]){
         n.factor <- 1
       }
@@ -193,7 +196,7 @@ shinyServer(function(input, output, session) {
           x.cru <- mutate(x.cru, RCP=factor(lev.rcps[1], levels=unique(lev.rcps)))
           x <- mutate(x, RCP=factor(ifelse(Year < rcp.min.yr, lev.rcps[1], lev.rcps[2]), unique(lev.rcps)))
         }
-        n.factor <- if(limit.sample) samplesize_factor(x) else 1
+        n.factor <- if(limit.sample) samplesize_factor(x, cru) else 1
         x <- bind_rows(x.cru, x) %>% split(.$Year) %>% map(~rvtable(.x))
       }
       step <- 0
@@ -248,7 +251,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       distPlot(d(), primeAxis(), clrby(), colorvec(), alpha_den(), 
-        fctby(), facet_scales(), yrs(), "density", preventPlot()) 
+        fctby(), facet_scales(), yrs(), "density", preventPlot(), plottheme) 
     })
   })
   plot_ts <- reactive({
@@ -256,7 +259,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       tsPlot(d(), yrs(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot())
+        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot(), plottheme)
     })
   })
   plot_dec <- reactive({
@@ -264,7 +267,7 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     isolate({
       decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
-        fctby(), facet_scales(), input$bptype, limit.sample, preventPlot())
+        fctby(), facet_scales(), input$bptype, limit.sample, preventPlot(), plottheme)
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())
