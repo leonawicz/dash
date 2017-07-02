@@ -21,10 +21,10 @@ function(request){
       ),
       uiOutput("dataLoadedSidebar"),
       tags$footer(
-        p(a(href="http://snap.uaf.edu", target="_blank",
-          tags$img(src="SNAPDB_acronym_75px.png", width="20%", alt="SNAP Dashboards"), style="padding: 5px; margin: 0px;"),
-        strong(em("SNAP Dashboards"))),
-        style="position:absolute; align: left; bottom:0; width:100%; height:30px; color: white; padding: 5px; z-index: 1000;"
+        a(href="http://snap.uaf.edu/", target="_blank",
+            tags$img(src="snap_white_transparent_400h.png", width="100%"), style="align: center; padding: 0px; margin: 0px;"),
+        p(strong(em("SNAP Dashboards")), style="text-align:center"),
+        style="position:absolute; align: center; bottom:0; width:100%; height:160px; color: white; padding: 5px; z-index: 1000;"
       )
     ),
     dashboardBody(
@@ -170,7 +170,7 @@ function(request){
           The app exposes hundreds of gigabytes of data to the user and any slice of the data can be rapidly accessed.", style="text-align:justify"),
           h2("Frequently asked questions"),
           faq(faqs, bscollapse.args=list(id="faq", open="apps"), showcase.args=list(drop="jfsp-v10")),
-          contactinfo()
+          contactinfo(list(uaf="UAFLogo_A_286.png", snap="snap_fullcolor_400h.png")), br()
         )
       )
     ),
