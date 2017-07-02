@@ -1,5 +1,4 @@
 library(shinycssloaders)
-faq <- source("faq.R", local=TRUE)[[1]]
 
 function(request){
   dashboardPage(
@@ -170,7 +169,7 @@ function(request){
           the app also allows users to compute any number of marginal distributions of interest.
           The app exposes hundreds of gigabytes of data to the user and any slice of the data can be rapidly accessed.", style="text-align:justify"),
           h2("Frequently asked questions"),
-          faq,
+          faq(faqs, bscollapse.args=list(id="faq", open="apps"), showcase.args=list(drop="jfsp-v10")),
           contactinfo()
         )
       )

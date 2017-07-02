@@ -31,6 +31,7 @@ valid_input_selection <- paste(
   paste(paste0("input.", c("regions", "rcps", "seasons")), "!= null", collapse=" & "), 
   " & (input.gcms != null || input.cru ==true)")
 clrfctopts <- c("", "RCP", "Model", "Season", "Region")
+faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "apps")
 
 #enableBookmarking(store="server") # not yet available on shinyapps.io
 cat("Remainder global.R time:\n")
