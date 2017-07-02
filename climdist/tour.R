@@ -75,10 +75,10 @@ tour.text <- c(
   By default, observations are shown as an overlay. The combination of boxplots and unique observations can be changed in the plot settings."
 )
 
-tour.pos <- c("left", "right", "bottom", rep("left", 12), rep("top", 2), "left", rep("top", 2))
+tour.pos <- c("bottom", "right", "bottom", rep("left", 12), rep("top", 2), "left", rep("top", 2))
 
 tour.element <- c(
-  "#shiny-tab-climate", "#mapset + .selectize-control", "#Map", "#regions + .selectize-control",
+  "#controls", "#mapset + .selectize-control", "#Map", "#regions + .selectize-control",
   "#variable + .selectize-control",
   "#rcps + .selectize-control", "#gcms + .selectize-control", "#seasons + .selectize-control", ".js-irs-3", 
   "#marginalize + .selectize-control", "#clrby + .selectize-control", "#fctby + .selectize-control",
@@ -98,7 +98,7 @@ observeEvent(input$help, {
   tour.options <- list(steps=steps(), "showProgress"="true", "showStepNumbers"="false")
   tour.events <- list(
     "onchange"=I(paste0(
-      stepcb(stepEquals(c(1:15)), c(rmClass(not.db.climate), goClass("climate"))),
+      stepcb(stepEquals(c(1:20)), c(rmClass(not.db.climate), goClass("climate"))),
       collapse="\n"))
   )
   introjs(session, options=tour.options, events=tour.events)

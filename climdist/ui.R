@@ -24,7 +24,7 @@ function(request){
         a(href="http://snap.uaf.edu/", target="_blank",
             tags$img(src="snap_white_transparent_400h.png", width="100%"), style="align: center; padding: 0px; margin: 0px;"),
         p(strong(em("SNAP Dashboards")), style="text-align:center"),
-        style="position:absolute; align: center; bottom:0; width:100%; height:160px; color: white; padding: 5px; z-index: 1000;"
+        style="position:absolute; align: center; bottom:0; width:100%; height:160px; color: white; padding: 5px;"
       )
     ),
     dashboardBody(
@@ -54,7 +54,7 @@ function(request){
                   )
                 )
               ),
-              fluidRow(box(
+              div(id="controls", fluidRow(box(
                 fluidRow(
                   column(5,
                     div(id="plot-container",
@@ -117,7 +117,7 @@ function(request){
                   )
                 ),
                 title="Data selection", width=12, collapsible=TRUE
-              )),
+              ))),
               uiOutput("statBoxes1"),
               fluidRow(box(
                 column(5,
