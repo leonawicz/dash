@@ -10,6 +10,24 @@ function(request){
       #tags$head(includeScript("ga-nwtapp.js"), includeScript("ga-allapps.js")),
     ),
     dashboardSidebar(
+      includeCSS(gist_url("css")),
+      tags$style(HTML(
+        '#toast-container>div {
+        opacity: .8;
+        -ms-filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=80);
+        filter: alpha(opacity=80);
+        }
+        #toast-container.toast-top-center > div {
+          overflow-y: auto;
+          width: 70%;
+          height: 700px;
+        }
+        .toast-top-center { 
+        top: 100px;   
+        margin: 0 auto;
+        left: 115px;
+        }'
+      )),
       useToastr(),
       introjsUI(),
       selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
@@ -23,12 +41,11 @@ function(request){
       tags$footer(
         a(href="http://snap.uaf.edu/", target="_blank",
             tags$img(src="snap_white_transparent_400h.png", width="100%"), style="align: center; padding: 0px; margin: 0px;"),
-        p(strong(em("SNAP Dashboards")), style="text-align:center"),
-        style="position:absolute; align: center; bottom:0; width:100%; height:160px; color: white; padding: 5px;"
+        p(strong(em("SNAP Dashboards")), style="text-align:center; padding: 0px; margin: 0px;"),
+        style="position:absolute; align: center; bottom:0px; width:100%; height:160px; color: white; padding: 5px;"
       )
     ),
     dashboardBody(
-      includeCSS(gist_url("css")),
       tabItems(
         tabItem(tabName="climate",
               bsModal("settings", "Additional settings", "settings_btn", size="large",
@@ -170,7 +187,7 @@ function(request){
           The app exposes hundreds of gigabytes of data to the user and any slice of the data can be rapidly accessed.", style="text-align:justify"),
           h2("Frequently asked questions"),
           faq(faqs, bscollapse.args=list(id="faq", open="apps"), showcase.args=list(drop="jfsp-v10")),
-          contactinfo(list(uaf="UAFLogo_A_286.png", snap="snap_fullcolor_400h.png")), br()
+          contactinfo(list(uaf="UAFLogo_A_286.png", iarc="iarc_375.jpg", snap="snap_fullcolor_400h.png")), br()
         )
       )
     ),
