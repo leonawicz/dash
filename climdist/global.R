@@ -4,7 +4,7 @@ Press 'Build distributions' in the center of the page to reload after updating d
 You can see an overview of app features and capabilities below. 
 If you are new to the app, taking the tour located in the sidebar is also recommended. Click to dismiss this message at any time.</p>
 <ul style='padding: 15px; text-align: justify;'>
-<li><h4><em>Full climate distributions, not just pre-aggregated stats.</em></h4>
+<li><h4>Full climate distributions, not just pre-aggregated stats.</h4>
 <p>Drill down into SNAP's high-resolution downscaled climate data.
 Access past and projected climate across Alaska and western Canada.</p></li>
 <li><h4>Advanced analytics for informed decisions</h4>
