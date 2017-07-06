@@ -3,5 +3,6 @@
 .RData
 .Ruserdata
 */www/*png
+*/www/*jpg
 aws_key.R
 climdist/appData/clim_2km_seasonal
