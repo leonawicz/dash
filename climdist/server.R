@@ -1,4 +1,6 @@
 library(rvtable)
+library(dtplyr)
+library(data.table)
 default_mapset <- "AK-CAN"
 regions_list_default <- locs[[default_mapset]]
 regions_selected_default <- regions_list_default[1]
@@ -10,7 +12,6 @@ plottheme <- get_plottheme()
 source("plots.R")
 
 shinyServer(function(input, output, session) {
-  
   source("observers.R", local=TRUE) # map and region selectInput observers
   source("tour.R", local=TRUE) # introjs tour
   
