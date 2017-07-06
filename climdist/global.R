@@ -11,7 +11,7 @@ Access past and projected climate across Alaska and western Canada.</p></li>
 <p>Integrate climate probability distributions across space, time and other factors. 
 Fit models, analyze projections and bound future uncertainty.</p></li>
 <li><h4>The data you specify. The output you need.</h4>
-<p>Get customized output including dynamic reports generated on the fly in reponse to your unique specifications.</p></li>
+<p>Get customized output including dynamic reports generated on the fly in response to your unique specifications.</p></li>
 <li><h4>Fully downloadable content at the click of a button</h4>
 <p>Download data sets available in several file formats as well as pdf graphics and reports based on live content.</p></li>
 <li><h4>Bookmarking</h4>
