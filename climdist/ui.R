@@ -12,10 +12,9 @@ function(request){
     dashboardSidebar(
       includeCSS(gist_url("css")),
       tags$style(HTML(
-        '#toast-container>div {
-        opacity: .8;
-        -ms-filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=80);
-        filter: alpha(opacity=80);
+        '.content-wrapper,
+        .right-side {
+        background-color: #ffffff;
         }
         #toast-container.toast-top-center > div {
           overflow-y: auto;
