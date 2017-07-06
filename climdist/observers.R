@@ -89,32 +89,33 @@ observe({
   rv$go
   isolate({
     if(!rv$intro_toast_done){
-      toastr_info(title="<h2>Explore spatial climate distributions</h2>", 
-        "<h4><p style='text-align:justify;'>Press 'Build distributions' to reload after any time you update your data selections.</p></h4>
-        <h4><p style=text-align:justify;>Launch the interactive tour from the sidebar for a detailed overview.</p></h4>",
-        timeOut=10000, position="top-center", closeButton=TRUE, preventDuplicates=TRUE)
+      appintro(title=app_intro$title, message=app_intro$message, logo=app_intro$logo, toast.args=app_intro$toast.args)
       rv$intro_toast_done <- TRUE
     }
   load_files <- function(path, files, src="local"){
+    reg <- rv$regions
     readData <- if(src=="local") readRDS else s3readRDS
+    readData_iterate <- function(i){
+      readData(file.path(path, files[i, 5])) %>% data.table() %>%
+      mutate(RCP=factor(switch(files[i, 2], 
+                               historical="Historical", 
+                               rcp45="RCP 4.5", 
+                               rcp60="RCP 6.0", 
+                               rcp85="RCP 8.5"), levels=c("Historical", rcps)),
+             Model=factor(ifelse(files[i, 3]=="ts40", cru, files[i, 3]), levels=c(cru, gcms)),
+             Region=factor(basename(path), levels=reg),
+             Var=factor(files[i, 1], levels=variables),
+             Season=factor(files[i, 4], levels=seasons)) %>%
+      select(RCP, Model, Region, Var, Season, Year, Val, Prob)
+    }
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     x <- vector("list", nrow(files))
     for(i in seq_along(x)){
       progress$inc(1/nrow(files), message="Loading data...", detail=basename(path))
-      x[[i]] <- readData(file.path(path, files[i, 5])) %>% 
-            mutate(RCP=factor(switch(files[i, 2], 
-                                     historical="Historical", 
-                                     rcp45="RCP 4.5", 
-                                     rcp60="RCP 6.0", 
-                                     rcp85="RCP 8.5"), levels=c("Historical", rcps)),
-                   Model=factor(ifelse(files[i, 3]=="ts40", cru, files[i, 3]), levels=c(cru, gcms)),
-                   Region=factor(basename(path), levels=rv$regions),
-                   Var=factor(files[i, 1], levels=variables),
-                   Season=factor(files[i, 4], levels=seasons)) %>%
-            select(RCP, Model, Region, Var, Season, Year, Val, Prob)
+      x[[i]] <- readData_iterate(i)
     }
-    x <- bind_rows(x) %>% rvtable
+    bind_rows(x) %>% rvtable
   }
   if(identical(files(), rv$current_files) & 
      identical(regions_selected(), rv$current_regions) & identical(input$cru, rv$cru)){
