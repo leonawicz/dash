@@ -10,6 +10,10 @@ rcp.min.yr <- 2006
 limit.sample <- TRUE # shrink final sampling by a factor of number of RCPs tmes number of GCMs
 plottheme <- get_plottheme()
 source("plots.R")
+app_intro <- list(
+  title=app_intro_title, message=app_intro_message, logo=app_intro_logo, 
+  toast.args=list(extendedTimeOut=30000, progressBar=TRUE)
+)
 
 shinyServer(function(input, output, session) {
   source("observers.R", local=TRUE) # map and region selectInput observers
@@ -194,7 +198,7 @@ shinyServer(function(input, output, session) {
         if("Model" %in% m) x <- mutate(x, Model=factor(lev.models[-1], levels=lev.models))
         if("RCP" %in% m){
           if(length(lev.rcps)==1) lev.rcps <- rep(lev.rcps, 2) # historical always present
-          x.cru <- mutate(x.cru, RCP=factor(lev.rcps[1], levels=unique(lev.rcps)))
+          x.cru <- mutate(x.cru, RCP=factor(as.character(RCP), levels=unique(lev.rcps)))
           x <- mutate(x, RCP=factor(ifelse(Year < rcp.min.yr, lev.rcps[1], lev.rcps[2]), unique(lev.rcps)))
         }
         n.factor <- if(limit.sample) samplesize_factor(x, cru) else 1
