@@ -27,6 +27,7 @@ function(request){
         left: 115px;
         }'
       )),
+      tags$style(valueBoxPalette("tolpal")),
       useToastr(),
       introjsUI(),
       selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
@@ -143,7 +144,10 @@ function(request){
                 ),
                 column(7,
                   conditionalPanel("output.ts_plot !== null", 
-                    withSpinner(plotOutput("ts_plot", height="auto"), type = 1)
+                    withSpinner(
+                      plotOutput("ts_plot", height="auto",
+                        dblclick="ts_plot_dblclk", brush=brushOpts(id="ts_plot_brush", direction="x", resetOnNew=TRUE)), 
+                      type = 1)
                   )
                 ),
                 title="Period density and annual observations", width=12, collapsible=TRUE

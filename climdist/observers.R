@@ -136,3 +136,21 @@ observe({
   }
   })
 })
+
+# Doubleclk ggplot observation
+# annual time series
+observeEvent(input$ts_plot_dblclk, {
+  brush <- input$ts_plot_brush
+  if(!is.null(brush)){
+    rv_plots$ts_x <- c(brush$xmin, brush$xmax)
+    rv_plots$ts_y <- c(brush$ymin, brush$ymax)
+  } else {
+    rv_plots$ts_x <- NULL
+    rv_plots$ts_y <- NULL
+  }
+})
+
+observeEvent(input$ts_plot_brush, {
+  brush <- input$ts_plot_brush
+  if(!is.null(brush)) rv_plots$ts_brush <- brush
+})
