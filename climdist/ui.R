@@ -10,7 +10,7 @@ function(request){
       #tags$head(includeScript("ga-nwtapp.js"), includeScript("ga-allapps.js")),
     ),
     dashboardSidebar(
-      includeCSS(gist_url("css")),
+      use_apputils(TRUE, TRUE),
       tags$style(HTML(
         '.content-wrapper,
         .right-side {
@@ -27,9 +27,6 @@ function(request){
         left: 115px;
         }'
       )),
-      tags$style(valueBoxPalette("tolpal")),
-      useToastr(),
-      introjsUI(),
       selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
       #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
