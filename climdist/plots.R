@@ -22,8 +22,11 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, ty
     
 }
 
-tsPlot <- function(data, yrs, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent, plottheme){
+tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent, plottheme, limits=NULL){
   if(prevent) return()
+  yrs <- range(data$Year)
+  if(is.null(limits)) limits <- list(yrs, NULL)
+  yrs <- seq(yrs[1], yrs[2])
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby)
   n.facets <- if(is.null(fctby)) 1 else length(unique(data[[fctby]]))
@@ -39,7 +42,7 @@ tsPlot <- function(data, yrs, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_
   }
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
   g +  theme_bw(base_size=18) + plottheme + theme(axis.text.x=element_text(angle=45, hjust=1)) + 
-    labs(y=ylb) + guides(fill=lgd_alpha) +
+    labs(y=ylb) + guides(fill=lgd_alpha) + coord_cartesian(xlim=limits[[1]], ylim=limits[[2]]) +
     scale_x_continuous(limits=range(yrs), expand=c(0, 0), breaks=breaks, labels=breaks, minor_breaks=yrs)
 }
 
