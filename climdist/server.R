@@ -23,7 +23,8 @@ shinyServer(function(input, output, session) {
   
   rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, cru=NULL,
           regions=regions_list_default, shp=shp.list[[default_mapset]], go=1, intro_toast_done=FALSE)
-
+  rv_plots <- reactiveValues(ts_x=NULL, ts_y=NULL, ts_brush=NULL)
+  
   mapset_labs <- reactive({ names(mapsets)[match(input$mapset, mapsets)] })
   
   output$mapset_regions <- renderUI({
@@ -251,6 +252,19 @@ shinyServer(function(input, output, session) {
     z
   })
   
+  d_ts_brushed <- reactive({
+    d()
+    x <- rv_plots$ts_x
+    b <- input$ts_plot_brush
+    isolate({
+      if(is.null(b) & is.null(x)){
+        y <- d()
+      } else if(is.null(b) & !is.null(x)){
+        y <- filter(d(), Year >= x[1] & Year <= x[2])
+      } else y <- brushedPoints(d(), b)
+      y
+    })
+  })
   plot_dist <- reactive({
     d()
     input$plot_btn
@@ -260,11 +274,13 @@ shinyServer(function(input, output, session) {
     })
   })
   plot_ts <- reactive({
-    d()
     input$plot_btn
+    d()
+    rv_plots$ts_x
     isolate({
-      tsPlot(d(), yrs(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot(), plottheme)
+      tsPlot(d_ts_brushed(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
+        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot(), plottheme, 
+        list(rv_plots$ts_x, NULL))
     })
   })
   plot_dec <- reactive({
@@ -282,52 +298,15 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "ts_plot", suspendWhenHidden=FALSE)
   outputOptions(output, "dec_plot", suspendWhenHidden=FALSE)
   
-  kilo_mega <- function(x){
-    if(abs(x) < 1e4) paste0(x) else 
-      if(abs(x) < 1e5) paste0(round(x/1000, 1), "K") else 
-        if(abs(x) < 1e6) paste0(round(x/1000), "K") else
-          paste0(round(x/1e6, 2), "M") 
-  }
+
   
   output$statBoxes1 <- renderUI({
-    x <- d()
-    dec <- as.character(sort(unique(x$Decade)))
-    if(length(dec) > 1) dec <- paste(dec[1], dec[length(dec)], sep=" - ")
-    if(preventPlot() || nrow(x)==0) return()
-    rnd <- if(x$Var[1]=="pr") 0 else 1
-    x <- ungroup(x) %>% summarise_(.dots=list(
-      Mean_=paste0("mean(Val)"),
-      Min_=paste0("min(Val)"),
-      Max_=paste0("max(Val)"),
-      Median_=paste0("stats::median(Val)"),
-      Pct25_=paste0("stats::quantile(Val, prob=0.25)"),
-      Pct75_=paste0("stats::quantile(Val, prob=0.75)"),
-      SD_=paste0("stats::sd(Val)")
-    )) %>% round(rnd) %>% unlist %>% map_chr(~kilo_mega(.x))
-    
-    clrs <- c("light-blue", "light-blue", "blue", "light-blue", "blue", "blue")
-    statval <- c(x[1:4], paste(x[5], "-", x[6]), x[7])
-    statlab <- list(
-      c("Mean", dec), c("Min", dec), c("Max", dec), c("Median", dec), c("IQR", dec), c("Std Dev", dec)
-    )
-    val <- map2(statval, c(rep(75, 4), 75, 75), ~pTextSize(.x, .y))
-    text <- map2(statlab, rep(150, 6), ~pTextSize(.x, .y, margin=0))
-    y <- list(
-      mean=valueBox(val[[1]], text[[1]], icon=icon(list(src="stat_icon_normal_mean_white.png", width="90px"), lib="local"), color=clrs[1], width=NULL),
-      min=valueBox(val[[2]], text[[2]], icon=icon(list(src="stat_icon_normal_min_white.png", width="90px"), lib="local"), color=clrs[2], width=NULL),
-      max=valueBox(val[[3]], text[[3]], icon=icon(list(src="stat_icon_normal_max_white.png", width="90px"), lib="local"), color=clrs[3], width=NULL),
-      med=valueBox(val[[4]], text[[4]], icon=icon(list(src="stat_icon_normal_median_white.png", width="90px"), lib="local"), color=clrs[4], width=NULL),
-      iqr=valueBox(val[[5]], text[[5]], icon=icon(list(src="stat_icon_boxplot_iqr_white.png", width="90px"), lib="local"), color=clrs[5], width=NULL),
-      sd=valueBox(val[[6]], text[[6]], icon=icon(list(src="stat_icon_normal_sd_white.png", width="90px"), lib="local"), color=clrs[6], width=NULL)
-    )
-    
-    tagList(
-      h4("Aggregate period statistics"),
-      fluidRow(
-        tags$head(tags$style(HTML(".small-box {height: 110px}"))),
-        column(2, y$mean), column(2, y$sd), column(2, y$med), column(2, y$iqr), column(2, y$min), column(2, y$max)
-      )
-    )
+    input$plot_btn
+    x <- d_ts_brushed()
+    isolate({
+      rnd <- if(x$Var[1] %in% c("tas", "tasmin", "tasmax")) 1 else 0
+      stat_boxes_group(x, clrby(), rnd=rnd, prevent=preventPlot())
+    })
   })
   
   output$statBoxes2 <- renderUI({
