@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
   
   rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, cru=NULL,
           regions=regions_list_default, shp=shp.list[[default_mapset]], go=1, intro_toast_done=FALSE)
-  rv_plots <- reactiveValues(ts_x=NULL, ts_y=NULL, ts_brush=NULL)
+  rv_plots <- reactiveValues(ts_x=NULL, ts_y=NULL, ts_brush=NULL, dec_x=NULL, dec_y=NULL, dec_brush=NULL)
   
   mapset_labs <- reactive({ names(mapsets)[match(input$mapset, mapsets)] })
   
@@ -262,120 +262,96 @@ shinyServer(function(input, output, session) {
       } else if(is.null(b) & !is.null(x)){
         y <- filter(d(), Year >= x[1] & Year <= x[2])
       } else y <- brushedPoints(d(), b)
+      if(nrow(y)==0) y <- d()
       y
     })
   })
-  plot_dist <- reactive({
+  
+  d_dec_brushed <- reactive({
     d()
+    x <- rv_plots$dec_x
+    b <- input$dec_plot_brush
+    isolate({
+      if(is.null(b) & is.null(x)){
+        y <- d()
+      } else {
+        dec <- d()$Decade
+        lev <- levels(dec)
+        intlev <- if(is.null(b) & !is.null(x)) round(x[1]):round(x[2]) else round(b$xmin):round(b$xmax)
+        y <- slice(d(), dec %in% lev[intlev])
+      }
+      y
+    })
+  })
+  
+  plot_dist <- reactive({
+    d_ts_brushed()
     input$plot_btn
     isolate({
-      distPlot(d(), primeAxis(), clrby(), colorvec(), alpha_den(), 
-        fctby(), facet_scales(), yrs(), "density", preventPlot(), plottheme) 
+      distPlot(d_ts_brushed(), primeAxis(), clrby(), colorvec(), alpha_den(), 
+        fctby(), facet_scales(), "density", preventPlot(), plottheme) 
     })
   })
   plot_ts <- reactive({
-    input$plot_btn
     d()
+    input$plot_btn
     rv_plots$ts_x
     isolate({
       tsPlot(d_ts_brushed(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot(), plottheme, 
-        list(rv_plots$ts_x, NULL))
+        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot(), plottheme)
     })
   })
   plot_dec <- reactive({
     d()
     input$plot_btn
+    rv_plots$dec_x
     isolate({
-      decPlot(d(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
+      decPlot(d_dec_brushed(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
         fctby(), facet_scales(), input$bptype, limit.sample, preventPlot(), plottheme)
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())
   output$ts_plot <- renderPlot({ plot_ts() }, height=function() plotHeight())
   output$dec_plot <- renderPlot({ plot_dec() }, height=function() plotHeight())
-  outputOptions(output, "dist_plot", suspendWhenHidden=FALSE)
-  outputOptions(output, "ts_plot", suspendWhenHidden=FALSE)
-  outputOptions(output, "dec_plot", suspendWhenHidden=FALSE)
   
-
-  
+  sbArgs <- reactive({
+    rnd <- if(d()$Var[1] %in% c("tas", "tasmin", "tasmax")) 1 else 0
+    s.t <- 150
+    s.v <- 75
+    h <- 110
+    w <- 90
+    # if(!is.null(clrby())){
+    #   n <- min(nlevels(d()[[clrby()]]), 2)
+    #   s.t <- round(s.t / n)
+    #   s.v <- round(s.v / n)
+    #   h <- round(h / n)
+    #   w <- round(w / n)
+    # }
+    list(rnd=rnd, h=h, w=w, s.t=s.t, s.v=s.v)
+  })
   output$statBoxes1 <- renderUI({
     input$plot_btn
     x <- d_ts_brushed()
     isolate({
-      rnd <- if(x$Var[1] %in% c("tas", "tasmin", "tasmax")) 1 else 0
-      stat_boxes_group(x, clrby(), rnd=rnd, prevent=preventPlot())
+      stat_boxes_group(x, clrby(), rnd=sbArgs()$rnd, style="valueBox", height=paste0(sbArgs()$h, "px"), 
+        width.icon=paste0(sbArgs()$w, "px"), text.size=sbArgs()$s.t, value.size=sbArgs()$s.v, prevent=preventPlot())
     })
   })
   
   output$statBoxes2 <- renderUI({
-    x <- d()
-    if(preventPlot() || nrow(x)==0) return()
-    dots <- paste0("mean(Val)")
-    pr <- x$Var[1]=="pr"
-    rnd <- if(pr) 0 else 1
-    x <- group_by(x, Decade) %>% summarise_(.dots=list(Decadal_mean=dots)) %>%
-      rename(Val=Decadal_mean)
-    v <- "Val"
-    idx.mn <- which.min(x[[v]])
-    idx.mx <- which.max(x[[v]])
-    idx.dn <- if(nrow(x)==1) NA else seq(which.min(diff(x[[v]])), length.out=2)
-    idx.up <- if(nrow(x)==1) NA else seq(which.max(diff(x[[v]])), length.out=2)
-    tot <- tail(x[[v]], 1) - x[[v]][1]
-    tot2 <- if(pr){
-      ifelse(tot < 1 & tot > 0, 1, ifelse(tot < 0 & tot > -1, -1, round(tot)))
-    } else round(tot, rnd)
-    x <<- x
-    pct <- if(!pr) NA else paste0(round(100*(tail(x[[v]], 1) / x[[v]][1] - 1)), "%")
-    
-    clrs <- c("light-blue", "blue", "light-blue", "blue", "light-blue", "blue")
-    statval <- list(
-      mn=kilo_mega(round(x[[v]][idx.mn], rnd)),
-      mx=kilo_mega(round(x[[v]][idx.mx], rnd)),
-      dn=if(is.na(idx.dn[1])) NA else kilo_mega(round(diff(x[[v]])[idx.dn[1]], rnd)),
-      up=if(is.na(idx.up[1])) NA else kilo_mega(round(diff(x[[v]])[idx.up[1]], rnd)),
-      totdif=kilo_mega(tot2),
-      totpct=pct
-    )
-    
-    src.dnup <- c("stat_icon_bar_deltaNeg_white.png", "stat_icon_bar_deltaPos_white.png")
-    if(!is.na(statval$dn[1]) && statval$dn > 0) src.dnup[1] <- src.dnup[2]
-    if(!is.na(statval$up[1]) && statval$up < 0) src.dnup[2] <- src.dnup[1]
-    if(tot < 0){
-      src.totals <- c("stat_icon_ts_deltaDec_white.png", "stat_icon_ts_deltaPctDec_white.png")
-    } else {
-      src.totals <- c("stat_icon_ts_deltaInc_white.png", "stat_icon_ts_deltaPctInc_white.png")
-    }
-    dec <- if(nrow(x)==1) paste(x$Decade[1]) else paste(x$Decade[c(1, nrow(x))], collapse=" - ")
-    
-    statlab <- list(
-      c("Min", paste(x$Decade[idx.mn])),
-      c("Max", paste(x$Decade[idx.mx])),
-      c("Min growth", paste(x$Decade[idx.dn], collapse=" - ")),
-      c("Max growth", paste(x$Decade[idx.up], collapse=" - ")),
-      c("Total change", dec),
-      c("% change", dec)
-    )
-    val <- map2(statval, 75, ~pTextSize(.x, .y))
-    text <- map2(statlab, rep(150, 6), ~pTextSize(.x, .y, margin=0))
-    y <- list(
-      mn=valueBox(val[[1]], text[[1]], icon=icon(list(src="stat_icon_normal_min_white.png", width="90px"), lib="local"), color=clrs[1], width=NULL),
-      mx=valueBox(val[[2]], text[[2]], icon=icon(list(src="stat_icon_normal_max_white.png", width="90px"), lib="local"), color=clrs[2], width=NULL),
-      dn=valueBox(val[[3]], text[[3]], icon=icon(list(src=src.dnup[1], width="90px"), lib="local"), color=clrs[3], width=NULL),
-      up=valueBox(val[[4]], text[[4]], icon=icon(list(src=src.dnup[2], width="90px"), lib="local"), color=clrs[4], width=NULL),
-      totdif=valueBox(val[[5]], text[[5]], icon=icon(list(src=src.totals[1], width="90px"), lib="local"), color=clrs[5], width=NULL),
-      totpct=valueBox(val[[6]], text[[6]], icon=icon(list(src=src.totals[2], width="90px"), lib="local"), color=clrs[6], width=NULL)
-    )
-    
-    tagList(
-      h4("Decadal averages: change over time"),
-      fluidRow(
-        tags$head(tags$style(HTML(".small-box {height: 110px}"))),
-        column(2, y$totdif), column(2, y$totpct), column(2, y$dn), column(2, y$up), column(2, y$mn), column(2, y$mx)
-      )
-    )
+    input$plot_btn
+    x <- d_dec_brushed()
+    isolate({
+      stat_boxes_group(x, clrby(), rnd=sbArgs()$rnd, style="valueBox", type="decadal", height=paste0(sbArgs()$h, "px"), 
+        width.icon=paste0(sbArgs()$w, "px"), text.size=sbArgs()$s.t, value.size=sbArgs()$s.v, prevent=preventPlot())
+    })
   })
+  
+  #outputOptions(output, "dist_plot", suspendWhenHidden=FALSE)
+  outputOptions(output, "ts_plot", suspendWhenHidden=FALSE)
+  outputOptions(output, "dec_plot", suspendWhenHidden=FALSE)
+  outputOptions(output, "statBoxes1", suspendWhenHidden=FALSE)
+  outputOptions(output, "statBoxes2", suspendWhenHidden=FALSE)
   
   output$dataLoadedSidebar <- renderUI({
     if(noData()) return()
