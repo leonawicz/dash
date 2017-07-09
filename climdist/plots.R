@@ -1,8 +1,10 @@
-distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, type, prevent, plottheme){
+distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, type, prevent, plottheme){
   if(prevent) return()
+  yrs <- range(data$Year)
+  yrs <- if(length(unique(yrs)) > 1) seq(yrs[1], yrs[2]) else yrs[1]
   lgd_rows <- 1
   if(is.null(clrby)) clr <- "white" else clr <- "black"
-  ylb <- if(yrs[1]==tail(yrs, 1)) paste(yrs[1], "density") else paste(yrs[1], "-", tail(yrs, 1), "density")
+  ylb <- if(length(yrs)==1) paste(yrs, "density") else paste(yrs[1], "-", tail(yrs, 1), "density")
   g <- ggplot(data=data, aes_string("Val"))
   if(type=="density"){
     if(is.null(clrby)){
@@ -22,11 +24,10 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, yrs, ty
     
 }
 
-tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent, plottheme, limits=NULL){
+tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means, ann_obs, prevent, plottheme){
   if(prevent) return()
   yrs <- range(data$Year)
-  if(is.null(limits)) limits <- list(yrs, NULL)
-  yrs <- seq(yrs[1], yrs[2])
+  yrs <- if(length(unique(yrs)) > 1) seq(yrs[1], yrs[2]) else yrs[1]
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
   pos <- .getPosition(jitter=TRUE, clrby)
   n.facets <- if(is.null(fctby)) 1 else length(unique(data[[fctby]]))
@@ -42,7 +43,7 @@ tsPlot <- function(data, ylb, clrby, clrvec, alpha, fctby, fct_scales, ann_means
   }
   g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
   g +  theme_bw(base_size=18) + plottheme + theme(axis.text.x=element_text(angle=45, hjust=1)) + 
-    labs(y=ylb) + guides(fill=lgd_alpha) + coord_cartesian(xlim=limits[[1]], ylim=limits[[2]]) +
+    labs(y=ylb) + guides(fill=lgd_alpha) +
     scale_x_continuous(limits=range(yrs), expand=c(0, 0), breaks=breaks, labels=breaks, minor_breaks=yrs)
 }
 
