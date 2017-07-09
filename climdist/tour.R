@@ -60,19 +60,24 @@ tour.text <- c(
   "15"="When the only changes made pertain to plot formatting, regenerate plots and statistics without reloading redundant data.
   This saves time, especially with large data sets or when computing marginal distributions as part of your data specifications.
   Rebuilding distributions is only necessary when data selections have changed.",
-  "16"="Statistics are derived from the full spatial climate probability densities for the selected geographic region(s).
-  The first row of statistics are based on annual data over the full selected time period.",
-  "17"="The density plot shows climate probability distributions for the aggregate time period.",
+  "16"="Results based on annual data are shown.
+  Statistics are derived from the full spatial climate probability densities for the selected geographic region(s).
+  These statistics are based on annual data over the full selected time period.",
+  "17"="The density plot shows climate probability distributions for the selected aggregate time period.",
   "18"="The annual time series shows annual mean climate values with a fitted regression line and confidence band by default.
-  Plot settings can be changed to show the distribution of individual annaul observations in place of or in addition to mean values.",
-  "19"="The second row of statistics relates to decadal mean change and derives from the decadal distributions
+  Plot settings can be changed to show the distribution of individual annaul observations in place of or in addition to mean values.
+  Brushing the time series with your mouse highlights a range of years The summary stat boxes and density plot 
+  automatically update to reflect a distributional summary your selection.
+  You can zoom in by double-clicking on a brushed area. Double-click again to zoom out.",
+  "19"="On the decadal tab, the stats overview relates to decadal mean change and derives from the decadal distributions
   of annual climate values across space and within each decade.
   The first two statistics show the change between the first and last selected decades.
   Percent change only applies to precipitation.
   The next two show which pairs of consecutive decades account for the smallest and largest decade-to-decade change.
   The last two show which decades have the smallest and largest climate values on average.",
   "20"="Decadal boxplots show the distribution of climate values in space and time per decade.
-  By default, observations are shown as an overlay. The combination of boxplots and unique observations can be changed in the plot settings."
+  By default, observations are shown as an overlay. The combination of boxplots and unique observations can be changed in the plot settings.
+  Like the annual time series, brushing the plot with your mouse updates the statistical summary."
 )
 
 tour.pos <- c("bottom", "right", "bottom", rep("left", 12), rep("top", 2), "left", rep("top", 2))
@@ -83,7 +88,7 @@ tour.element <- c(
   "#rcps + .selectize-control", "#gcms + .selectize-control", "#seasons + .selectize-control", ".js-irs-3", 
   "#marginalize + .selectize-control", "#clrby + .selectize-control", "#fctby + .selectize-control",
   "#go_btn", "#settings_btn", "#plot_btn",
-  "#statBoxes1", "#dist_plot", "#ts_plot", "#statBoxes2", "#dec_plot"
+  "#statBoxes1", "#denbox", "#ts_plot", "#statBoxes2", "#dec_plot"
 )
 
 steps <- reactive({
@@ -94,11 +99,12 @@ steps <- reactive({
 
 # begin tour on button click
 observeEvent(input$help, {
-  not.db.climate <- c("info")
   tour.options <- list(steps=steps(), "showProgress"="true", "showStepNumbers"="false")
   tour.events <- list(
     "onchange"=I(paste0(
-      stepcb(stepEquals(c(1:20)), c(rmClass(not.db.climate), goClass("climate"))),
+      stepcb(stepEquals(c(1:20)), c(rmClass("info"), goClass("climate"))),
+      stepcb(stepEquals(c(1:18)), c(rmClass("Decadal"), goClass("Annual"))),
+      stepcb(stepEquals(c(19:20)), c(rmClass("Annual"), goClass("Decadal"))),
       collapse="\n"))
   )
   introjs(session, options=tour.options, events=tour.events)
