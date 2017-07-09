@@ -137,8 +137,8 @@ observe({
   })
 })
 
-# Doubleclk ggplot observation
-# annual time series
+# Annual time series
+# double click ggplot observation
 observeEvent(input$ts_plot_dblclk, {
   brush <- input$ts_plot_brush
   if(!is.null(brush)){
@@ -150,7 +150,27 @@ observeEvent(input$ts_plot_dblclk, {
   }
 })
 
+# brush ggplot observation
 observeEvent(input$ts_plot_brush, {
   brush <- input$ts_plot_brush
   if(!is.null(brush)) rv_plots$ts_brush <- brush
+})
+
+# Decadal time series
+# double click ggplot observation
+observeEvent(input$dec_plot_dblclk, {
+  brush <- input$dec_plot_brush
+  if(!is.null(brush)){
+    rv_plots$dec_x <- c(brush$xmin, brush$xmax)
+    rv_plots$dec_y <- c(brush$ymin, brush$ymax)
+  } else {
+    rv_plots$dec_x <- NULL
+    rv_plots$dec_y <- NULL
+  }
+})
+
+# brush ggplot observation
+observeEvent(input$dec_plot_brush, {
+  brush <- input$dec_plot_brush
+  if(!is.null(brush)) rv_plots$dec_brush <- brush
 })
