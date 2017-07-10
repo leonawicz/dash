@@ -25,29 +25,11 @@ Tooltips are available throughout the app. Go into deeper detail with the intera
 <p>Parallel processing, even bigger data needs, and other features available to authenticated users.</p></li>
 </ul>"
 
-app_about <- tagList(
-  p("This app provides rapid access to complete spatial distribution summaries for various climate variables.
-            Probability distributions are estimated from downscaled historical and projected climate model outputs, 
-    as well as from downscaled Climatological Research Unit (CRU) data for historical periods.
-    Spatial probability distributions are conditioned on various geographical regions of interest.
-    A number of different map sets are available, each of which contains related geographical subregions
-    that can be selected and compared.", style="text-align:justify"),
-  p("Data sets are stored in the Amazon Web Services S3 cloud environment. By accessing these data sets
-    on demand, this app can quickly deliver full distributional information regarding climate projections based on
-    user settings. The plots of densities and individual observations provide a much more complete picture of the 
-    spatial variation in the climate series than relying strictly on select statistics.
-    Distributional shape and properties such as modality are readily observable. With access to the distributions,
-    any statistics of interest can be calculated.", style="text-align:justify"),
-  p("Additionally, when multiple spatially explicit data sets are requested by the user, the app offers the ability
-    to compute marginal distributions for a climate variable by integrating out, for instance, multiple
-    GCMs, RCPs, regions and/or years. By working with complete distributions rather than aggregate statistics from the start,
-    it becomes possible to merge densities to yield these marginal probability distributions.", style="text-align:justify"),
-  p("In total, the app offers 3.7 million spatial probability distributions among 82 unique geographic subdomains
-    across more than 45,000 high-resolution, spatially explicit climate maps.
-    These maps cover all climate variables, time periods, GCMs and RCPs.
-    Overall, the app provides users with direct access to a synthesis of map layers containing a total of approximately 200 billion pixels,
-    all without the need to reduce spatial climate distributions to select, precomputed statistics.
-    Then with some additional in-app computing time at users' discretion, 
-    the app also allows users to compute any number of marginal distributions of interest.
-    The app exposes hundreds of gigabytes of data to the user and any slice of the data can be rapidly accessed.", style="text-align:justify")
+about_app <- tagList(
+  h2("About this application"),
+  HTML(read_md_paragraphs("text_about.txt", ptag=TRUE, collapse=TRUE)),
+  app_citation("Matthew Leonawicz", 2017,
+               title="Web application for Alaska and western Canada downscaled GCM output",
+               publisher="Scenarios Network for Alaska and Arctic Planning, University of Alaska Fairbanks",
+               url="http://shiny.snap.uaf.edu/climdist")
 )
