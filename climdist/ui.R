@@ -162,7 +162,7 @@ function(request){
         tabItem(tabName="info",
           about_app,
           h2("Frequently asked questions"),
-          faq(faqs, bscollapse.args=list(id="faq", open="apps"), showcase.args=list(drop="jfsp-v10")),
+          faq(faqs, bscollapse.args=list(id="faq", open="apps"), showcase.args=list(drop="climdist")),
           contactinfo(list(uaf="UAFLogo_A_286.png", iarc="iarc_375.jpg", snap="snap_fullcolor_400h.png")), br()
         )
       )
