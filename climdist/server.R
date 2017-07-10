@@ -352,23 +352,43 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "dec_plot", suspendWhenHidden=FALSE)
   outputOptions(output, "statBoxes1", suspendWhenHidden=FALSE)
   outputOptions(output, "statBoxes2", suspendWhenHidden=FALSE)
-  
+  source("report.R", local=TRUE)
   output$dataLoadedSidebar <- renderUI({
     if(noData()) return()
+    mar_ <- "margin: 15px;"
+    mar_lr <- "margin: 0px 15px 0px 15px;"
+    report <- NULL
+    if(length(yrs()) >= 30){
+      tip <- "Download a customized fact sheet based on currently selected data and displayed plots. See the FAQ section under the Information tab above for details."
+      report <- tagList(
+        hr(style=mar_),
+        fluidRow(
+          column(12,
+            h5(strong("Download custom report"), style=mar_lr),
+            tipify(downloadButton("report", "Fact sheet", style=action_btn_style), tip, placement="right", options=list(container="body"))
+          )
+        )
+      )
+    }
     tagList(
-      hr(style="margin: 12px;"),
+      hr(style=mar_),
       actionButton("help", "Take tour", style=action_btn_style, icon=icon("question-circle")),
       #bookmarkButton(style=action_btn_style)
       actionButton("fake", "Bookmark", style=action_btn_style, icon=icon("link")), # placeholder
       bsTooltip("fake", "Note: Server-side bookmarking not yet available.", placement="right", options=list(container="body")),
-      hr(style="margin: 12px;"),
-      h5(strong("Download current data set"), style="margin: 0px 12px 0px 12px;"),
+      hr(style=mar_),
+      h5(strong("Download current data set"), style=mar_lr),
       radioButtons("filetype", "File type:", c("csv", "json", "rds"), "rds", inline=T),
-      downloadButton('downloadData', 'Download', style=action_btn_style),
+      downloadButton("downloadData", "Data set", style=action_btn_style),
       bsTooltip("filetype", "The csv and json file types are universal. The rds file type is familiar, specific and convenient to R users and results in a much smaller file size. If your data selections result in a large data set, rds is highly recommended. A 1.5 MB rds file is equivalent to ~100 MB json file for example.",
-                placement="right", options=list(container='body')),
+                placement="right", options=list(container="body")),
       bsTooltip("downloadData", "Download the currently loaded data set of climate distributions. Reprodicible sampling is performed on the probability densities and output in table form.",
-                placement="right", options=list(container='body'))
+                placement="right", options=list(container="body")),
+      report,
+      hr(style=mar_),
+      h5(strong("Download current plots"), style=mar_lr),
+      map(c("Annual_series", "Decadal_boxplots", "Period_density"), 
+          ~downloadButton(paste0("dlPlot_", tolower(.x)), gsub("_", " ", .x), style=action_btn_style))
     )
   })
   
@@ -381,4 +401,14 @@ shinyServer(function(input, output, session) {
       if(type=="rds") saveRDS(d(), file)
     }
   )
+  
+  lapply(1:3, function(i, ids, plots){
+    output[[paste0("dlPlot_", ids[i])]] <- downloadHandler(
+      filename=function() { paste0(ids[i], ".pdf" ) },
+      content=function(file){ pdf(file); print(plots[[i]]); dev.off() }
+    ) }, 
+    ids=c("annual_series", "decadal_boxplots", "period_density"), 
+    plots=list(plot_ts(), plot_dec(), plot_dist())
+  )
+  
 })
