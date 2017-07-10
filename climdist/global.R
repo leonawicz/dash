@@ -12,6 +12,8 @@ library(dplyr)
 library(purrr)
 library(ggplot2)
 library(aws.s3)
+library(knitr)
+library(rmarkdown)
 
 cat("Total library load time:\n")
 print(proc.time() - ptm)
