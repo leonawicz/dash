@@ -75,7 +75,7 @@ function(request){
                   leafletOutput("Map", width="100%", height="400px"),
                   conditionalPanel("output.Map == null", 
                     h4("Loading map", style="position: absolute; left: 0; top: 32%; right: 0; text-align: center;"),
-                    tags$img(src="spinner.gif", id="loading-spinner")
+                    tags$img(src="resources/images/spinner.gif", id="loading-spinner")
                   )
                 )
               ),
@@ -160,8 +160,7 @@ function(request){
           )
         )),
         tabItem(tabName="info",
-          h2("About this application"),
-          app_about,
+          about_app,
           h2("Frequently asked questions"),
           faq(faqs, bscollapse.args=list(id="faq", open="apps"), showcase.args=list(drop="jfsp-v10")),
           contactinfo(list(uaf="UAFLogo_A_286.png", iarc="iarc_375.jpg", snap="snap_fullcolor_400h.png")), br()
