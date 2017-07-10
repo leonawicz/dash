@@ -50,46 +50,10 @@ shinyServer(function(input, output, session) {
   
   # Initialize map and add polygons
   mapSelect <- reactive({
-    ptm <- proc.time()
-    cat("Leaflet initialization time excluding renderLeaflet:\n")
-    progress <- shiny::Progress$new()
-    on.exit(progress$close())
-    progress$set(message="Generating zone map", value=0)
-    akcan <- input$mapset==default_mapset
-    if(akcan){
-      z <- "Alaska/western Canada"
-      z.id <- z
-      z.lab <- z
-    } else {
-      z <- as.character(rv$shp[[mapset_reg_id()]])
-      idx <- match(z, locs2[[input$mapset]])
-      z.id <- as.character(rv$regions[idx])
-      z.lab <- names(rv$regions[idx])
-    }
-    xyzoom <- if(input$mapset %in% mapsets[1:2]) c(-135, 61, 3) else c(-155, 65, 4)
-    n <- 1 + length(z)
-    x <- leaflet() %>% addTiles() %>% setView(xyzoom[1], xyzoom[2], xyzoom[3])
-    progress$inc(1/n, detail="Basemap built")
-    # Add background polygon region outlines after map is created
-    if(!akcan){
-      for(i in seq_along(z)){
-        x <- x %>% addPolygons(data=rv$shp[rv$shp[[mapset_reg_id()]]==z[i],], stroke=TRUE, fillOpacity=0, weight=1,
-          color="black", group="not_selected", layerId=z.id[i], label=z.lab[i],
-          highlightOptions=highlightOptions(opacity=1, weight=2, fillOpacity=0, 
-            bringToFront=FALSE, sendToBack=FALSE))
-        progress$inc((i+1)/n, detail=paste("Adding polygon", i))
-      }
-    } else {
-      x <- x %>% addPolygons(data=rv$shp, stroke=TRUE, opacity=1, fillOpacity=0.2, weight=2,
-        group="not_selected", layerId=z.id[1], label=z.lab[1],
-        highlightOptions=highlightOptions(opacity=1, weight=2, fillOpacity=0.2, 
-         bringToFront=FALSE, sendToBack=FALSE))
-      progress$inc((1+1)/n, detail=paste("Adding polygon", 1))
-    }
-    print(proc.time() - ptm)
-    x
+    xyz <- split(c(rep(c(-135, 61, 3), 2), rep(c(-155, 65, 4), 8)), rep(1:10, each=3))
+    names(xyz) <- mapsets
+    build_mapset(rv$shp, rv$regions, mapset_reg_id(), input$mapset, mapsets, default_mapset, "Alaska/western Canada", locs2, xyz)
   })
-  
   output$Map <- renderLeaflet(mapSelect())
   outputOptions(output ,"Map", suspendWhenHidden=FALSE)
   
