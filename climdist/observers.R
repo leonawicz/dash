@@ -21,42 +21,14 @@ observeEvent(input$mapset, {
 
 # observe region selectInput and update map polygons
 observeEvent(input$regions, {
-  x <- input$regions
-  if(is.null(x) || x[1]!=default_mapset){
-    proxy <- leafletProxy("Map")
-    not_selected <- setdiff(rv$regions, x)
-    if(length(not_selected)) walk(not_selected, ~proxy %>% removeShape(layerId=paste0("selected_", .x)))
-    if(length(x)){
-      x2 <- as.character(locs2[[input$mapset]][match(x, locs[[input$mapset]])])
-      walk2(x, x2, ~proxy %>%
-        addPolygons(data=rv$shp[rv$shp[[mapset_reg_id()]]==.y,],
-          stroke=TRUE, fillOpacity=0.2, weight=1, group="selected", layerId=paste0("selected_", .x)))
-    }
-  }
+  update_mapset("selectInput", rv$shp, input$mapset, mapset_reg_id(), 
+                input$regions, rv$regions, locs, locs2, default_mapset)
 }, ignoreNULL=FALSE)
 
 # observe map shape click and add or remove selected polygons and update region selectInput
 observeEvent(input$Map_shape_click, {
-  p <- input$Map_shape_click$id
-  x <- input$regions
-  if(is.null(x) || x[1]!=default_mapset){
-    p1 <- strsplit(p, "_")[[1]][2]
-    proxy <- leafletProxy("Map")
-    if(substr(p, 1, 9)=="selected_"){
-      proxy %>% removeShape(layerId=p)
-    } else {
-      p2 <- as.character(locs2[[input$mapset]][match(p, locs[[input$mapset]])])
-      proxy %>% addPolygons(data=rv$shp[rv$shp[[mapset_reg_id()]]==p2,], stroke=TRUE, fillOpacity=0.2, weight=1,
-                            group="selected", layerId=paste0("selected_", p))
-    }
-    if(!is.null(p)){
-      if(is.na(p1) && (is.null(x) || !p %in% x)){
-        updateSelectInput(session, "regions", selected=c(x, p))
-      } else if(!is.na(p1) && p1 %in% x){
-        updateSelectInput(session, "regions", selected=x[x!=p1])
-      }
-    }
-  }
+  update_mapset("mapclick", selected_regions=input$regions, 
+                click_id=input$Map_shape_click$id, session=session)
 })
 
 # Toast-related observer for variable selection
