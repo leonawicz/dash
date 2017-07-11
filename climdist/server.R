@@ -131,32 +131,14 @@ shinyServer(function(input, output, session) {
     d()
     x <- rv_plots$ts_x
     b <- input$ts_plot_brush
-    isolate({
-      if(is.null(b) & is.null(x)){
-        y <- d()
-      } else if(is.null(b) & !is.null(x)){
-        y <- filter(d(), Year >= x[1] & Year <= x[2])
-      } else y <- brushedPoints(d(), b)
-      if(nrow(y)==0) y <- d()
-      y
-    })
+    isolate(brushed_data(d(), x, b))
   })
   
   d_dec_brushed <- reactive({
     d()
     x <- rv_plots$dec_x
     b <- input$dec_plot_brush
-    isolate({
-      if(is.null(b) & is.null(x)){
-        y <- d()
-      } else {
-        dec <- d()$Decade
-        lev <- levels(dec)
-        intlev <- if(is.null(b) & !is.null(x)) round(x[1]):round(x[2]) else round(b$xmin):round(b$xmax)
-        y <- slice(d(), dec %in% lev[intlev])
-      }
-      y
-    })
+    isolate(brushed_data(d(), x, b, "decadal"))
   })
   
   plot_dist <- reactive({
