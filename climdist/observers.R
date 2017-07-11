@@ -96,7 +96,7 @@ observe({
     reg <- rv$regions
     readData <- if(src=="local") readRDS else s3readRDS
     readData_iterate <- function(i){
-      readData(file.path(path, files[i, 5])) %>% data.table() %>%
+      readData(file.path(path, files[i, 5])) %>%
       mutate(RCP=factor(switch(files[i, 2], 
                                historical="Historical", 
                                rcp45="RCP 4.5", 

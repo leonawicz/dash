@@ -1,6 +1,4 @@
 library(rvtable)
-library(dtplyr)
-library(data.table)
 default_mapset <- "AK-CAN"
 regions_list_default <- locs[[default_mapset]]
 regions_selected_default <- regions_list_default[1]
@@ -107,95 +105,8 @@ shinyServer(function(input, output, session) {
   d <- reactive({
     rv$go
     isolate({
-      set.seed(1)
       req(d_sub())
-      m <- input$marginalize # determine need for marginalization
-      if(!is.null(m) && !"" %in% m){
-        m <- sort(m)
-        m.lev <- map(m, ~levels(d_sub()[[.x]])) %>% 
-          map(~.x[!.x %in% c("Historical", cru)])
-        m <- m[which(map_lgl(m.lev, ~length(.x) > 1))]
-        if(!length(m)) m <- NULL
-      }
-      merge_vars <- !is.null(m) && !"" %in% m
-      composite <- "Composite GCM"
-      lev.rcps <- NULL
-      if(input$yrs[1] < rcp.min.yr || (cru %in% i()[[2]] && input$yrs[1] <= cru.max.yr))
-        lev.rcps <- "Historical"
-      if(input$yrs[2] >= rcp.min.yr) lev.rcps <- c(lev.rcps, "Projected")
-      
-      d.args <- if(input$variable=="pr") list(n=200, adjust=0.1, from=0) else list(n=200, adjust=0.1)
-      s.args <- list(n=100) # marginalize steps
-      n.samples <- 100 # final sampling
-      x <- d_sub()
-      if(merge_vars & cru %in% i()[[2]]){ # split CRU from GCMs
-        lev.models <- if("Model" %in% m) c(cru, composite) else i()[[2]]
-        x.cru <- filter(x, Model==cru) %>% mutate(Model=factor(Model, levels=lev.models)) %>% 
-          split(.$Year) %>% map(~rvtable(.x))
-        x <- filter(x, Model!=cru)
-      }
-      if(!merge_vars){
-        n.factor <- if(limit.sample) samplesize_factor(x, cru) else 1
-      } else if(!cru %in% i()[[2]]){
-        n.factor <- 1
-      }
-      x <- x %>% split(.$Year) %>% map(~rvtable(.x))
-      n.steps <- length(x)
-      step <- 0
-      progress <- shiny::Progress$new()
-      on.exit(progress$close())
-      if(merge_vars){ # marginalize (excludes CRU and historical GCM data)
-        msg <- "Integrating variables..."
-        progress$set(0, message=msg, detail=NULL)
-        n.steps.marginal <- if(length(m)) n.steps*length(m) else n.steps
-        for(i in seq_along(m)){
-          for(j in seq_along(x)){
-            step <- step + 1
-            detail <- paste0("Marginalizing over ", m[i], "s: ", round(100*step/n.steps.marginal), "%")
-            if(step %% 5 == 0 || step==n.steps.marginal) progress$set(step/n.steps.marginal, msg, detail)
-            x[[j]] <- marginalize(x[[j]], m[i], density.args=d.args, sample.args=s.args)
-          }
-        }
-      }
-      if(merge_vars & cru %in% i()[[2]]){ # update factor levels (with CRU data)
-        x.cru <- bind_rows(x.cru)
-        x <- bind_rows(x) %>% ungroup()
-        if("Model" %in% m) x <- mutate(x, Model=factor(lev.models[-1], levels=lev.models))
-        if("RCP" %in% m){
-          if(length(lev.rcps)==1) lev.rcps <- rep(lev.rcps, 2) # historical always present
-          x.cru <- mutate(x.cru, RCP=factor(as.character(RCP), levels=unique(lev.rcps)))
-          x <- mutate(x, RCP=factor(ifelse(Year < rcp.min.yr, lev.rcps[1], lev.rcps[2]), unique(lev.rcps)))
-        }
-        n.factor <- if(limit.sample) samplesize_factor(x, cru) else 1
-        x <- bind_rows(x.cru, x) %>% split(.$Year) %>% map(~rvtable(.x))
-      }
-      step <- 0
-      msg <- "Sampling distributions..."
-      progress$set(0, message=msg, detail=NULL) # adjust sample based on number of RCPs and GCMs
-      for(j in seq_along(x)){ # sample distributions
-        step <- step + 1
-        if(step %% 5 == 0 || step==n.steps) 
-          progress$set(step/n.steps, message=msg, detail=paste0(round(100*step/n.steps), "%"))
-        x[[j]] <- sample_rvtable(x[[j]], n=max(10, round(n.samples/n.factor)))
-      }
-      x <- bind_rows(x) %>% ungroup()
-      if(merge_vars & !cru %in% i()[[2]]){ # update factor levels (no CRU data)
-        if("Model" %in% m) x <- mutate(x, Model=factor(composite, levels=composite))
-        if("RCP" %in% m)
-          if(length(lev.rcps)==1) lev.rcps <- rep(lev.rcps, 2) # projected always present
-          x <- mutate(x, RCP=factor(ifelse(Year < rcp.min.yr, lev.rcps[1], lev.rcps[2]), unique(lev.rcps)))
-      }
-      if(nrow(x) > 0){ # unit conversion
-        if(metric()){
-          x <- mutate(x, Val=ifelse(Var=="pr", round(Val), round(Val, 1)))
-        } else {
-          x <- mutate(x, Val=ifelse(Var=="pr", round(Val/25.4, 3), round((9/5)*Val + 32, 1)))
-        }
-        if(input$variable=="pr") x$Val[x$Val < 0] <- 0
-        x <- mutate(x, Decade=factor( # Add decade factor column
-          paste0(Year - Year %% 10, "s"), levels=paste0(unique(Year - Year %% 10), "s")))
-      }
-      x
+      dist_data(d_sub(), input$variable, input$marginalize, seed=1, metric(), input$yrs, rcp.min.yr, cru.max.yr, i()[[2]], cru)
     })
   })
   
