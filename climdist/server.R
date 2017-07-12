@@ -1,11 +1,4 @@
 library(rvtable)
-default_mapset <- "AK-CAN"
-regions_list_default <- locs[[default_mapset]]
-regions_selected_default <- regions_list_default[1]
-cru <- "CRU 4.0"
-cru.max.yr <- 2015
-rcp.min.yr <- 2006
-limit.sample <- TRUE # shrink final sampling by a factor of number of RCPs tmes number of GCMs
 plottheme <- get_plottheme()
 source("plots.R")
 app_intro <- list(

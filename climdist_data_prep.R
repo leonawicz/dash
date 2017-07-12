@@ -94,6 +94,21 @@ locs2 <- locs
 locs2$`LCC Regions` <- levels(LCC_shp$NAME)[c(1,2,4,3,5)]
 locs2$`TPA Regions` <- levels(TPA_shp$NAME)[c(8,1,2,3,7,4,5,6)]
 
+# Additional constants used by app
 mapset_colIDs <- rep("NAME", 10)
-objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 'period', 'variables', 'seasons', 'stats', 'mapset_colIDs')
+default_mapset <- "AK-CAN"
+regions_list_default <- locs[[default_mapset]]
+regions_selected_default <- regions_list_default[1]
+cru.max.yr <- 2015 # max observational year
+rcp.min.yr <- 2006 # min projected GCM run year
+limit.sample <- TRUE # shrink final sampling by a factor of number of RCPs tmes number of GCMs
+action_btn_style <- "color: black; margin: 10px 15px 10px 15px; width: 200px;" # action button styling
+axis_scales <- c("Fixed"="fixed", "Free"="free", "Free X"="free_x", "Free Y"="free_y") # facet scale options
+req_inputs <- c("regions", "rcps", "seasons", "gcms") # inputs that must be non-null to proceed in app
+clrfctopts <- c("", "RCP", "Model", "Season", "Region") # available variables for coloring/faceting plots
+faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "apps") # FAQs to load from apputils
+objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 
+          'period', 'variables', 'seasons', 'stats', 'mapset_colIDs',
+          'default_mapset', 'regions_list_default', 'regions_selected_default', 'cru.max.yr', 'rcp.min.yr',
+          'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clrfctopts', 'faqs')
 save(list=objs, file="climdist/appData/appData.RData") # general data
