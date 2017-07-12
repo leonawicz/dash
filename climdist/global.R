@@ -7,10 +7,12 @@ library(shinydashboard)
 library(shinytoastr)
 
 library(apputils)
+library(MASS) # rlm
 library(sp)
 library(dplyr)
 library(purrr)
 library(ggplot2)
+library(ggpmisc)
 library(aws.s3)
 library(knitr)
 library(rmarkdown)
