@@ -1,4 +1,5 @@
 library(shinycssloaders)
+req_inputs <- inputs_not_null(req_inputs)
 
 function(request){
   dashboardPage(
@@ -11,22 +12,7 @@ function(request){
     ),
     dashboardSidebar(
       use_apputils(TRUE, TRUE),
-      tags$style(HTML(
-        '.content-wrapper,
-        .right-side {
-        background-color: #ffffff;
-        }
-        #toast-container.toast-top-center > div {
-          overflow-y: auto;
-          width: 70%;
-          height: 700px;
-        }
-        .toast-top-center { 
-        top: 100px;   
-        margin: 0 auto;
-        left: 115px;
-        }'
-      )),
+      update_toastr_css(list(width='70%', height='700px'), list(top='100px')),
       selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
       #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
@@ -35,12 +21,7 @@ function(request){
         menuItem("Information", icon=icon("info-circle"), tabName="info")
       ),
       uiOutput("dataLoadedSidebar"),
-      tags$footer(
-        a(href="http://snap.uaf.edu/", target="_blank",
-            tags$img(src="snap_white_transparent_400h.png", width="100%"), style="align: center; padding: 0px; margin: 0px;"),
-        p(strong(em("SNAP Dashboards")), style="text-align:center; padding: 0px; margin: 0px;"),
-        style="position:absolute; align: center; bottom:0px; width:100%; height:160px; color: white; padding: 5px;"
-      )
+      dashboard_footer("http://snap.uaf.edu/", "snap_white_transparent_400h.png", "SNAP Dashboards")
     ),
     dashboardBody(
       tabItems(
@@ -115,7 +96,7 @@ function(request){
                 ),
                 fluidRow(
                  column(4, 
-                   conditionalPanel(valid_input_selection,
+                   conditionalPanel(req_inputs,
                      actionButton("go_btn", "Build distributions", class="btn-block btn-go", icon("signal")),
                      bsTooltip("go_btn", "Build probability distributions based on current data selections.")
                    )
