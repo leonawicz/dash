@@ -57,6 +57,7 @@ locs$`TPA Regions` <- c(
 
 # Shapefiles
 library(rgdal)
+library(rgeos)
 library(maptools)
 shpDir <- "LowResFlatShapefiles"
 proj4 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
