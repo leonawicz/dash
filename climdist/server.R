@@ -110,6 +110,7 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  varName <- reactive({ names(variables)[match(input$variable, variables)] })
   yrs <- reactive({ seq(input$yrs[1], input$yrs[2]) })
   clrby <- reactive({ if(is.null(input$clrby) || input$clrby=="") NULL else input$clrby })
   fctby <- reactive({ if(is.null(input$fctby) || input$fctby=="") NULL else input$fctby })
@@ -118,7 +119,7 @@ shinyServer(function(input, output, session) {
   plotHeight <- reactive({ if(preventPlot()) 0 else 400 })
   
   primeAxis <- reactive({
-    v <- names(variables)[match(input$variable, variables)]
+    v <- varName()
     if(metric()){
       z <- if(v=="Precipitation") paste(v,"(mm)") else bquote(.(paste(v, "("))~degree~C~")")
     } else {
@@ -154,8 +155,9 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     rv_plots$ts_x
     isolate({
-      tsPlot(d_ts_brushed(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-        fctby(), facet_scales(), input$show_annual_means, input$show_annual_obs, preventPlot(), plottheme)
+      tsPlot(d_ts_brushed(), varName(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
+        fctby(), facet_scales(), input$show_annual, input$fit_models, input$eq_pos,
+        preventPlot(), plottheme)
     })
   })
   plot_dec <- reactive({

@@ -63,8 +63,9 @@ function(request){
               ),
               column(4,
                 sliderInput("alpha_ts", "Annual series transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%"),
-                checkboxInput("show_annual_means", "Show annual means", TRUE, width="100%"),
-                checkboxInput("show_annual_obs", "Show annual observations", FALSE, width="100%")
+                checkboxGroupInput("show_annual", "Show points", c("Means", "Observations"), "Means", inline=TRUE, width="100%"),
+                checkboxGroupInput("fit_models", "Statistical models", c("lm", "glm", "rlm", "gam", "loess"), "lm", inline=TRUE, width="100%"),
+                selectInput("eq_pos", "Linear model summary", c("Top left", "Top right", "Bottom left", "Bottom right"), width="100%")
               )
             )
           ),
