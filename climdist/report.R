@@ -24,7 +24,9 @@ output$report <- downloadHandler(
       plot_ts=plot_ts(),
       plot_den=plot_dist(),
       plot_dec=plot_dec(),
-      cru=cru
+      cru=cru,
+      clrby=clrby(),
+      fctby=fctby()
     )
     rmarkdown::render(tempReport, output_file=file, params=params, envir=new.env(parent=globalenv())
     )
