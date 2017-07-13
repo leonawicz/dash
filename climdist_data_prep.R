@@ -108,8 +108,16 @@ axis_scales <- c("Fixed"="fixed", "Free"="free", "Free X"="free_x", "Free Y"="fr
 req_inputs <- c("regions", "rcps", "seasons", "gcms") # inputs that must be non-null to proceed in app
 clrfctopts <- c("", "RCP", "Model", "Season", "Region") # available variables for coloring/faceting plots
 faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "apps") # FAQs to load from apputils
+intro_bg <- "https://s-media-cache-ak0.pinimg.com/originals/4a/95/21/4a9521be7331ee5a44073edbd8492fca.jpg"
+intro_css_args <- list(
+  container=list(width='70%', height='700px'), 
+  toast=list(top='100px', 
+             background=paste0('url(', intro_bg, ') no-repeat center 0px'), 
+             'background-size'='70% 700px'), 
+  rgba=c(60, 141, 188, 0.6), hover.rgba=c(60, 141, 188, .9), radius='0px')
+   
 objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 
           'period', 'variables', 'seasons', 'stats', 'mapset_colIDs',
           'default_mapset', 'regions_list_default', 'regions_selected_default', 'cru.max.yr', 'rcp.min.yr',
-          'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clrfctopts', 'faqs')
+          'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clrfctopts', 'faqs', 'intro_css_args')
 save(list=objs, file="climdist/appData/appData.RData") # general data
