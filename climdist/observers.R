@@ -64,6 +64,12 @@ observe({
       appintro(title=app_intro$title, message=app_intro$message, logo=app_intro$logo, toast.args=app_intro$toast.args)
       rv$intro_toast_done <- TRUE
     }
+  })
+}, priority=10)
+    
+observe({
+  rv$go
+  isolate({
   load_files <- function(path, files, src="local"){
     reg <- rv$regions
     readData <- if(src=="local") readRDS else s3readRDS

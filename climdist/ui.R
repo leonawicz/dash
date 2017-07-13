@@ -12,7 +12,9 @@ function(request){
     ),
     dashboardSidebar(
       use_apputils(TRUE, TRUE),
-      update_toastr_css(list(width='70%', height='700px'), list(top='100px')),
+      update_toastr_css(list(width='70%', height='700px'), 
+        list(top='100px', 'background'='url("https://s-media-cache-ak0.pinimg.com/originals/4a/95/21/4a9521be7331ee5a44073edbd8492fca.jpg") no-repeat center 0px', 'background-size'='70% 700px'), 
+        c(60, 141, 188, 0.6), c(60, 141, 188, .9), radius='0px'),
       selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
       #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(

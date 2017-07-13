@@ -3,7 +3,7 @@ plottheme <- get_plottheme()
 source("plots.R")
 app_intro <- list(
   title=app_intro_title, message=app_intro_message, logo=app_intro_logo, 
-  toast.args=list(extendedTimeOut=30000, progressBar=TRUE)
+  toast.args=list(extendedTimeOut=30000, progressBar=TRUE, showDuration=300, hideDuration=0)
 )
 
 shinyServer(function(input, output, session) {
@@ -257,7 +257,7 @@ shinyServer(function(input, output, session) {
   lapply(1:3, function(i, ids, plots){
     output[[paste0("dlPlot_", ids[i])]] <- downloadHandler(
       filename=function() { paste0(ids[i], ".pdf" ) },
-      content=function(file){ pdf(file); print(plots[[i]]); dev.off() }
+      content=function(file){ cairo_pdf(file, 12, 7); print(plots[[i]]); dev.off() }
     ) }, 
     ids=c("annual_series", "decadal_boxplots", "period_density"), 
     plots=list(plot_ts(), plot_dec(), plot_dist())
