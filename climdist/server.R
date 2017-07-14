@@ -179,23 +179,17 @@ shinyServer(function(input, output, session) {
     #   h <- round(h / n)
     #   w <- round(w / n)
     # }
-    list(rnd=rnd, h=h, w=w, s.t=s.t, s.v=s.v)
-  })
-  output$statBoxes1 <- renderUI({
-    input$plot_btn
-    x <- d_ts_brushed()
-    isolate({
-      stat_boxes_group(x, clrby(), rnd=sbArgs()$rnd, style="valueBox", height=paste0(sbArgs()$h, "px"), 
-        width.icon=paste0(sbArgs()$w, "px"), text.size=sbArgs()$s.t, value.size=sbArgs()$s.v, prevent=preventPlot())
-    })
+    list(rnd=rnd, h=paste0(h, "px"), w=paste0(w, "px"), s.t=s.t, s.v=s.v)
   })
   
-  output$statBoxes2 <- renderUI({
-    input$plot_btn
-    x <- d_dec_brushed()
-    isolate({
-      stat_boxes_group(x, clrby(), rnd=sbArgs()$rnd, style="valueBox", type="decadal", height=paste0(sbArgs()$h, "px"), 
-        width.icon=paste0(sbArgs()$w, "px"), text.size=sbArgs()$s.t, value.size=sbArgs()$s.v, prevent=preventPlot())
+  lapply(1:2, function(i, x, p=c("annual", "decadal")){
+    output[[paste0("statBoxes", i)]] <- renderUI({
+      input$plot_btn
+      x <- if(i==1) d_ts_brushed() else d_dec_brushed()
+      isolate({
+        stat_boxes_group(x, clrby(), rnd=sbArgs()$rnd, type=p[i], height=sbArgs()$h, 
+          width.icon=sbArgs()$w, text.size=sbArgs()$s.t, value.size=sbArgs()$s.v, prevent=preventPlot())
+      })
     })
   })
   
