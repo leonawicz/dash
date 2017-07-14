@@ -50,6 +50,7 @@ output$report <- downloadHandler(
     tempReport <- file.path(tempdir(), "report.Rmd")
     file.copy("report.Rmd", tempReport, overwrite=TRUE)
     params <- list(
+      wd=getwd(),
       years=yrs(),
       n=length(yrs()),
       variable=input$variable,
