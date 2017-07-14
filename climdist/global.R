@@ -19,7 +19,7 @@ library(rmarkdown)
 
 source("apptext.R")
 load("appData/appData.RData") # load any default local data sets
-data_source <- "aws" # specify location of data sets as local or aws
-dataloc <- if(data_source=="local") "appData" else "s3://leonawicz/apps/ar5_climdist"
+data_source <- if(.Platform$OS.type=="windows") "local" else "aws" # specify location of data sets as local or aws
+dataloc <- if(data_source=="local") "../" else "s3://leonawicz/apps/ar5_climdist"
 source("aws_key.R") # authentication to AWS
 #enableBookmarking(store="server") # not yet available on shinyapps.io
