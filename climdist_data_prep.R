@@ -108,7 +108,7 @@ action_btn_style <- "color: black; margin: 10px 15px 10px 15px; width: 200px;" #
 axis_scales <- c("Fixed"="fixed", "Free"="free", "Free X"="free_x", "Free Y"="free_y") # facet scale options
 req_inputs <- c("regions", "rcps", "seasons", "gcms") # inputs that must be non-null to proceed in app
 clrfctopts <- c("", "RCP", "Model", "Season", "Region") # available variables for coloring/faceting plots
-faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "apps") # FAQs to load from apputils
+faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "factsheet_about", "apps") # FAQs to load from apputils
 intro_bg <- "https://s-media-cache-ak0.pinimg.com/originals/4a/95/21/4a9521be7331ee5a44073edbd8492fca.jpg"
 intro_css_args <- list(
   container=list(width='70%', height='700px'), 
