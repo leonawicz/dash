@@ -112,9 +112,9 @@ intro_bg <- "https://s-media-cache-ak0.pinimg.com/originals/4a/95/21/4a9521be733
 intro_css_args <- list(
   container=list(width='70%', height='700px'), 
   toast=list(top='100px', 
-             #background=paste0('url(', intro_bg, ') no-repeat center 0px'), #### inactive
+             #background=paste0('url(', intro_bg, ') no-repeat center 0px'), #### inactive background override
              'background-size'='70% 700px'), 
-  rgba=c(60, 141, 188, 0.8), hover.rgba=c(60, 141, 188, 1), radius='0px')
+  rgba=c(60, 141, 188, 0.8), hover.rgba=c(60, 141, 188, 1)) #, radius='0px') #### inactive radius override
    
 objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 
           'period', 'variables', 'seasons', 'stats', 'mapset_colIDs',
