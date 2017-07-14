@@ -3,7 +3,7 @@ plottheme <- get_plottheme()
 source("plots.R")
 app_intro <- list(
   title=app_intro_title, message=app_intro_message, logo=app_intro_logo, 
-  toast.args=list(extendedTimeOut=30000, progressBar=TRUE, showDuration=300, hideDuration=0)
+  toast.args=list(extendedTimeOut=30000, progressBar=TRUE, showDuration=300, hideDuration=1000)
 )
 
 shinyServer(function(input, output, session) {
