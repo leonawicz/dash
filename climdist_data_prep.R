@@ -1,3 +1,4 @@
+setwd("C:/github/dash")
 library(dplyr)
 library(purrr)
 library(aws.s3)
@@ -26,7 +27,7 @@ rcps <- c("4.5"=rcp[2], "6.0"=rcp[3], "8.5"=rcp[4])
 gcms <- c("GFDL-CM3", "GISS-E2-R", "IPSL-CM5A-LR", "MRI-CGCM3", "NCAR-CCSM4")
 cru <- "CRU 4.0"
 
-dataDir <- "climdist/appData/clim_2km_seasonal"
+dataDir <- "clim_2km_seasonal"
 grpDirs <- list.files(dataDir)
 grpDirs <- grpDirs[match(mapsets, grpDirs)]
 locs <- map(grpDirs, ~list.files(file.path(dataDir, .x)))
