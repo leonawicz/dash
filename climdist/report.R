@@ -44,8 +44,12 @@ decadal_plot_content <- reactive({
   "box plots with spatial samples overlay"
 })
 
+report_doc_type <- reactive({
+  switch(input$report_format, pdf=pdf_document(), html=html_document())
+})
+
 output$report <- downloadHandler(
-  filename="snap_downscaled_climate_custom_report.pdf",
+  filename=function() { paste0("snap_downscaled_climate_custom_report.", input$report_format) },
   content=function(file){
     tempReport <- file.path(tempdir(), "report.Rmd")
     file.copy("report.Rmd", tempReport, overwrite=TRUE)
@@ -70,7 +74,9 @@ output$report <- downloadHandler(
       annlm="lm" %in% input$fit_models,
       deccontent=decadal_plot_content()
     )
-    rmarkdown::render(tempReport, output_file=file, params=params, envir=new.env(parent=globalenv())
+    rmarkdown::render(tempReport, output_file=file, 
+                      output_format=report_doc_type(), 
+                      params=params, envir=new.env(parent=globalenv())
     )
   }
 )

@@ -211,7 +211,9 @@ shinyServer(function(input, output, session) {
         fluidRow(
           column(12,
             h5(strong("Download custom report"), style=mar_lr),
-            tipify(downloadButton("report", "Fact sheet", style=action_btn_style), tip, placement="right", options=list(container="body"))
+            radioButtons("report_format", "File type:", c("pdf", "html"), "pdf", inline=T),
+            tipify(downloadButton("report", "Fact sheet", style=action_btn_style), tip, placement="right", options=list(container="body")),
+            bsTooltip("report_format", "Reports are available as pdf or html documents.", placement="right", options=list(container="body"))
           )
         )
       )
