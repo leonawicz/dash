@@ -8,24 +8,6 @@ uni <- reactive({
   x
 })
 
-sbg_to_tables <- function(d, clrby, rnd=0){
-  id <- c("annual", "decadal")
-  clr <- !is.null(clrby)
-  if(clr) lev <- levels(d[[clrby]])
-  x <- purrr::map(id, ~stat_boxes_group(
-    d, clrby, rnd=rnd, type=.x, prevent=FALSE, output="list")) %>%
-    purrr::map(~dplyr::tbl_df(data.frame(do.call(rbind, .x), stringsAsFactors=FALSE)))
-  names(x[[1]])[6] <- "SD"
-  names(x[[2]])[2:5] <- gsub("\\.", " ", names(x[[2]][2:5]))
-  names(x[[2]])[6] <- "Percent change"
-  if(clr){
-    x <- purrr::map(x, ~dplyr::mutate(.x, ColorBy=factor(lev, levels=lev)))
-    names(x[[1]])[1] <- names(x[[2]][1]) <- clrby
-  }
-  names(x) <- id
-  x
-}
-
 report_stats <- reactive({ sbg_to_tables(d(), clrby(), sbArgs()$rnd) })
 annual_plot_content <- reactive({
   x <- c("Means", "Observations")
