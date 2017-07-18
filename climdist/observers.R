@@ -58,14 +58,18 @@ observeEvent(input$go_btn, {
 })
 
 observe({
-  rv$go
+  x <- actionButton("overview_btn", "Overview", class="btn-block", icon("info-circle"))
+  showNotification("Need an overview?", action=x, duration=NULL, id="overview_note", type="message")
+})
+
+observe({
+  input$overview_btn
   isolate({
-    if(!rv$intro_toast_done){
+    if(!is.null(input$overview_btn) && input$overview_btn > 0){
       appintro(title=app_intro$title, message=app_intro$message, logo=app_intro$logo, toast.args=app_intro$toast.args)
-      rv$intro_toast_done <- TRUE
     }
   })
-}, priority=10)
+})
     
 observe({
   rv$go
