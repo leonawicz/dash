@@ -12,7 +12,11 @@ function(request){
     ),
     dashboardSidebar(
       use_apputils(TRUE, TRUE),
+      useShinyjs(),
       do.call(update_toastr_css, intro_css_args),
+      
+      tags$head(tags$html(app_overlay(NULL, "snap_white_transparent_400h.png", "loading.png"))),
+      tags$script("$(document).ready(function(){ $('#fade-wrapper').fadeIn(); });"),
       selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
       #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
