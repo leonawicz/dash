@@ -115,7 +115,7 @@ intro_css_args <- list(
   toast=list(top='100px', 
              #background=paste0('url(', intro_bg, ') no-repeat center 0px'), #### inactive background override
              'background-size'='70% 700px'), 
-  rgba=c(60, 141, 188, 0.8), hover.rgba=c(60, 141, 188, 1)) #, radius='0px') #### inactive radius override
+  rgba=c(60, 141, 188, 1), hover.rgba=c(60, 141, 188, 1)) #, radius='0px') #### inactive radius override
    
 objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 
           'period', 'variables', 'seasons', 'stats', 'mapset_colIDs',
