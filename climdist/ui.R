@@ -17,7 +17,6 @@ function(request){
       
       tags$head(tags$html(app_overlay(NULL, "snap_white_transparent_400h.png", "loading.png"))),
       tags$script("$(document).ready(function(){ $('#fade-wrapper').fadeIn(); });"),
-      selectInput("mapset", "Change map layer", choices=mapsets, width="100%"),
       #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
         id="tabs",
@@ -67,52 +66,55 @@ function(request){
               ),
               column(7,
                 fluidRow(
-                 column(4,
-                   selectInput("variable", "Climate variable", choices=variables, selected=variables[2], width="100%")
-                 ),
-                 column(8,
-                   uiOutput("mapset_regions")
-                 )
+                  column(4,
+                    selectInput("mapset", "Change map layer", choices=mapsets, width="100%")
+                  ),
+                  column(8,
+                    uiOutput("mapset_regions")
+                  )
                 ),
                 fluidRow(
-                 column(4,
-                   selectInput("rcps", "RCP", choices=rcps, selected=rcps[1], multiple=TRUE, width="100%")
-                 ),
-                 column(8,
-                   selectInput("gcms", "GCM", choices=gcms, selected=gcms[1], multiple=TRUE, width="100%")
-                 )
+                  column(4,
+                    selectInput("variable", "Climate variable", choices=variables, selected=variables[2], width="100%")
+                  ),
+                  column(4,
+                    selectInput("rcps", "RCP", choices=rcps, selected=rcps[1], multiple=TRUE, width="100%")
+                  ),
+                  column(4,
+                    selectInput("gcms", "GCM", choices=gcms, selected=gcms[1], multiple=TRUE, width="100%")
+                  )
                 ),
                 fluidRow(
-                 column(4,
-                   selectInput("seasons", "Season", choices=seasons, selected=seasons[1], multiple=TRUE, width="100%")
-                 ),
-                 column(8,
-                   sliderInput("yrs", "Years", min=period[1], max=period[2], value=c(2006, 2099), step=1, sep="", width="100%")
-                 )
+                  column(4,
+                    selectInput("seasons", "Season", choices=seasons, selected=seasons[1], multiple=TRUE, width="100%")
+                  ),
+                  column(8,
+                    sliderInput("yrs", "Years", min=period[1], max=period[2], value=c(2006, 2099), step=1, sep="", width="100%")
+                  )
                 ),
                 fluidRow(
-                   column(4,
-                     selectInput("marginalize", "Merge distributions across", 
-                       choices=c("", "RCPs"="RCP", "Models"="Model"), selected="", multiple=TRUE, width="100%")
-                   ),
-                   column(4, selectInput("clrby", "Color by", clrfctopts, width="100%")),
-                   column(4, selectInput("fctby", "Facet by", clrfctopts, width="100%"))
+                  column(4,
+                    selectInput("marginalize", "Merge distributions across", 
+                      choices=c("", "RCPs"="RCP", "Models"="Model"), selected="", multiple=TRUE, width="100%")
+                  ),
+                  column(4, selectInput("clrby", "Color by", clrfctopts, width="100%")),
+                  column(4, selectInput("fctby", "Facet by", clrfctopts, width="100%"))
                 ),
                 fluidRow(
-                 column(4, 
-                   conditionalPanel(req_inputs,
-                     actionButton("go_btn", "Build distributions", class="btn-block btn-go", icon("signal")),
-                     bsTooltip("go_btn", "Build probability distributions based on current data selections.")
-                   )
-                 ),
-                 column(4,
-                   actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear")),
-                   bsTooltip("settings_btn", "Addional specifications for data selection and plot formatting.")
-                 ),
-                 column(4,
-                   actionButton("plot_btn", "Regenerate plots", class="btn-block", icon("line-chart")),
-                   bsTooltip("plot_btn", "Regenerate plots quickly when only plot formatting has changed but data selection is the same.")
-                 )
+                  column(4, 
+                    conditionalPanel(req_inputs,
+                      actionButton("go_btn", "Build distributions", class="btn-block btn-go", icon("signal")),
+                      bsTooltip("go_btn", "Build probability distributions based on current data selections.")
+                    )
+                  ),
+                  column(4,
+                    actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear")),
+                    bsTooltip("settings_btn", "Addional specifications for data selection and plot formatting.")
+                  ),
+                  column(4,
+                    actionButton("plot_btn", "Regenerate plots", class="btn-block", icon("line-chart")),
+                    bsTooltip("plot_btn", "Regenerate plots quickly when only plot formatting has changed but data selection is the same.")
+                  )
                 )
               )
             ),
