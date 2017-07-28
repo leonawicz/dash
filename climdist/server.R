@@ -52,25 +52,25 @@ shinyServer(function(input, output, session) {
     rv$go
     isolate( is.null(input$metric) || input$metric=="Metric" )
   })
+  cru_selected <- reactive({ cru %in% input$gcms })
   i <- reactive({
-    cur_gcms <- input$gcms
-    if(!is.null(input$cru) && input$cru && input$yrs[1] <= cru.max.yr) cur_gcms <- c(cru, cur_gcms)
-    list(rcps=input$rcps, gcms=cur_gcms, 
+    list(rcps=input$rcps, gcms=input$gcms, 
       reg=regions_selected(), seasons=input$seasons, yrs=input$yrs,
       reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
   })
   
   files <- reactive({
+    cruId <- "ts40"
     rcps_string <- tolower(gsub("[ \\.]", "", input$rcps))
-    models <- if(!is.null(input$cru) && input$cru && input$yrs[1] <= cru.max.yr)
-      c("ts40", input$gcms) else input$gcms
-    files <- expand.grid(input$variable, rcps_string, input$gcms, input$seasons, stringsAsFactors=FALSE)
-    if("ts40" %in% models & input$yrs[1] >= rcp.min.yr){
-      files <- rbind(expand.grid(input$variable, "historical", "ts40", input$seasons, stringsAsFactors=FALSE), files)
+    models <- input$gcms
+    if(cru_selected() && input$yrs[1] <= cru.max.yr) models <- c(cruId, models[models != cru])
+    files <- expand.grid(input$variable, rcps_string, models[models != cruId], input$seasons, stringsAsFactors=FALSE)
+    if(cru_selected() & input$yrs[1] >= rcp.min.yr){
+      files <- rbind(expand.grid(input$variable, "historical", cruId, input$seasons, stringsAsFactors=FALSE), files)
     } else if(input$yrs[1] < rcp.min.yr){ 
       files <- rbind(expand.grid(input$variable, "historical", models, input$seasons, stringsAsFactors=FALSE), files)
     }
-    files <- files[!(files[, 3]=="ts40" & files[, 1] %in% c("tasmin", "tasmax")),] # temporarily missing files
+    files <- files[!(files[, 3]==cruId & files[, 1] %in% c("tasmin", "tasmax")),] # temporarily missing files
     cbind(files, Var5=paste0(files[,1], "_", files[,2], "_", files[,3], "_", files[,4], ".rds"))
   })
   

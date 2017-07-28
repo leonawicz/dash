@@ -100,12 +100,12 @@ observe({
     bind_rows(x) %>% rvtable
   }
   if(identical(files(), rv$current_files) & 
-     identical(regions_selected(), rv$current_regions) & identical(input$cru, rv$cru)){
+     identical(regions_selected(), rv$current_regions) & identical(cru_selected(), rv$cru)){
     rv$load_new_files <- FALSE
   } else {
     rv$current_files <- files()
     rv$current_regions <- regions_selected()
-    rv$cru <- input$cru
+    rv$cru <- cru_selected()
     rv$load_new_files <- TRUE
   }
   if(rv$load_new_files){
@@ -113,7 +113,7 @@ observe({
     rv$d <- map(region_paths, ~load_files(.x, files(), data_source)) %>% bind_rows  %>% droplevels
     rv$current_files <- files()
     rv$current_regions <- regions_selected()
-    rv$cru <- input$cru
+    rv$cru <- cru_selected()
     rv$load_new_files <- FALSE
   }
   })

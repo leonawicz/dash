@@ -32,8 +32,7 @@ function(request){
           bsModal("settings", "Additional settings", "settings_btn", size="large",
             h4("Data selection"),
             fluidRow(
-              column(4, selectInput("metric", "Units", c("Metric", "US"), width="100%")),
-              column(4, checkboxInput("cru", "Include CRU 4.0 data", FALSE, width="100%"))
+              column(4, selectInput("metric", "Units", c("Metric", "US"), width="100%"))
             ),
             h4("Plot options"),
             fluidRow(
@@ -81,7 +80,7 @@ function(request){
                     selectInput("rcps", "RCP", choices=rcps, selected=rcps[1], multiple=TRUE, width="100%")
                   ),
                   column(4,
-                    selectInput("gcms", "GCM", choices=gcms, selected=gcms[1], multiple=TRUE, width="100%")
+                    selectInput("gcms", "Model", choices=list(GCMs=gcms, Basline=list(cru)), selected=gcms[1], multiple=TRUE, width="100%")
                   )
                 ),
                 fluidRow(
