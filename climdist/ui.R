@@ -107,10 +107,6 @@ function(request){
                   column(4,
                     actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear")),
                     bsTooltip("settings_btn", "Addional specifications for data selection and plot formatting.")
-                  ),
-                  column(4,
-                    actionButton("plot_btn", "Regenerate plots", class="btn-block", icon("line-chart")),
-                    bsTooltip("plot_btn", "Regenerate plots quickly when only plot formatting has changed but data selection is the same.")
                   )
                 )
               )
