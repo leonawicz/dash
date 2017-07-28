@@ -9,7 +9,7 @@ bkt <- "leonawicz"
 
 period <- c(1860, 2099)
 variables <- c("Precipitation"="pr", "Mean temperature"="tas", "Min Temperature"="tasmin", "Max temperature"="tasmax")
-seasons <- c("Annual"="annual", "Winter"="winter", "Spring"="spring", "Summer"="summer", "Autumn"="autumn")
+seasons <- list("Annual"="annual", Seasons=list("Winter"="winter", "Spring"="spring", "Summer"="summer", "Autumn"="autumn"))
 stats <- c("Mean")
 mapsets <- c(
   "Alaska/western Canada"="AK-CAN",
@@ -109,6 +109,8 @@ axis_scales <- c("Fixed"="fixed", "Free"="free", "Free X"="free_x", "Free Y"="fr
 req_inputs <- c("regions", "rcps", "seasons", "gcms") # inputs that must be non-null to proceed in app
 clropts <- c("Color by..."="", "RCP", "Model", "Season", "Region") # available variables for coloring/faceting plots
 fctopts <- c("Facet by..."="", "RCP", "Model", "Season", "Region")
+mergeopts <- c("Merge distributions..."="", "RCPs"="RCP", "GCMs"="Model") # available variables for marginalizing over
+mergeopts_tooltip <- "Compute marginal distributions by marginalizing over levels of selected categorical variables."
 faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "factsheet_about", "apps") # FAQs to load from apputils
 intro_bg <- "https://s-media-cache-ak0.pinimg.com/originals/4a/95/21/4a9521be7331ee5a44073edbd8492fca.jpg"
 intro_css_args <- list(
@@ -121,5 +123,6 @@ intro_css_args <- list(
 objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 
           'period', 'variables', 'seasons', 'stats', 'mapset_colIDs',
           'default_mapset', 'regions_list_default', 'regions_selected_default', 'cru.max.yr', 'rcp.min.yr',
-          'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clropts', 'fctopts', 'faqs', 'intro_css_args')
+          'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clropts', 'fctopts', 
+          'mergeopts', 'mergeopts_tooltip', 'faqs', 'intro_css_args')
 save(list=objs, file="climdist/appData/appData.RData") # general data
