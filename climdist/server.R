@@ -105,9 +105,12 @@ shinyServer(function(input, output, session) {
   
   varName <- reactive({ names(variables)[match(input$variable, variables)] })
   yrs <- reactive({ seq(input$yrs[1], input$yrs[2]) })
-  clrby <- reactive({ if(is.null(input$clrby) || input$clrby=="") NULL else input$clrby })
-  fctby <- reactive({ if(is.null(input$fctby) || input$fctby=="") NULL else input$fctby })
-  colorvec <- reactive({ if(is.null(clrby())) NULL else tolpal(length(unique(d()[[clrby()]]))) })
+  clrby_annual <- reactive({ if(is.null(input$clrby_annual) || input$clrby_annual=="") NULL else input$clrby_annual })
+  fctby_annual <- reactive({ if(is.null(input$fctby_annual) || input$fctby_annual=="") NULL else input$fctby_annual })
+  clrby_decadal <- reactive({ if(is.null(input$clrby_decadal) || input$clrby_decadal=="") NULL else input$clrby_decadal })
+  fctby_decadal <- reactive({ if(is.null(input$fctby_decadal) || input$fctby_decadal=="") NULL else input$fctby_decadal })
+  colorvec_annual <- reactive({ if(is.null(clrby_annual())) NULL else tolpal(length(unique(d()[[clrby_annual()]]))) })
+  colorvec_decadal <- reactive({ if(is.null(clrby_decadal())) NULL else tolpal(length(unique(d()[[clrby_decadal()]]))) })
   preventPlot <- reactive({ is.null(d()) || nrow(d())==0 })
   plotHeight <- reactive({ if(preventPlot()) 0 else 400 })
   
@@ -139,8 +142,8 @@ shinyServer(function(input, output, session) {
     d_ts_brushed()
     input$plot_btn
     isolate({
-      distPlot(d_ts_brushed(), primeAxis(), clrby(), colorvec(), alpha_den(), 
-        fctby(), facet_scales(), "density", preventPlot(), plottheme) 
+      distPlot(d_ts_brushed(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_den(), 
+        fctby_annual(), facet_scales(), "density", preventPlot(), plottheme) 
     })
   })
   plot_ts <- reactive({
@@ -148,8 +151,8 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     rv_plots$ts_x
     isolate({
-      tsPlot(d_ts_brushed(), varName(), primeAxis(), clrby(), colorvec(), alpha_ts(), 
-        fctby(), facet_scales(), input$show_annual, input$fit_models, input$eq_pos,
+      tsPlot(d_ts_brushed(), varName(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_ts(), 
+        fctby_annual(), facet_scales(), input$show_annual, input$fit_models, input$eq_pos,
         preventPlot(), plottheme)
     })
   })
@@ -158,8 +161,8 @@ shinyServer(function(input, output, session) {
     input$plot_btn
     rv_plots$dec_x
     isolate({
-      decPlot(d_dec_brushed(), primeAxis(), clrby(), colorvec(), alpha_dec(), 
-        fctby(), facet_scales(), input$bptype, limit.sample, preventPlot(), plottheme)
+      decPlot(d_dec_brushed(), primeAxis(), clrby_decadal(), colorvec_decadal(), alpha_dec(), 
+        fctby_decadal(), facet_scales(), input$bptype, limit.sample, preventPlot(), plottheme)
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())
@@ -191,8 +194,8 @@ shinyServer(function(input, output, session) {
     output[[paste0("statBoxes", i)]] <- renderUI({
       input$plot_btn
       x <- if(i==1) d_ts_brushed() else d_dec_brushed()
-      isolate({
-        stat_boxes_group(x, clrby(), rnd=sbArgs()$rnd, type=p[i], height=sbArgs()$h, 
+      isolate({ # NOTE: if decide to adjust height by colorby()* reactives, more sbArgs()* reactives required
+        stat_boxes_group(x, list(clrby_annual(), clrby_decadal())[[i]], rnd=sbArgs()$rnd, type=p[i], height=sbArgs()$h, 
           width.icon=sbArgs()$w, text.size=sbArgs()$s.t, value.size=sbArgs()$s.v, prevent=preventPlot())
       })
     })
@@ -237,11 +240,7 @@ shinyServer(function(input, output, session) {
                 placement="right", options=list(container="body")),
       bsTooltip("downloadData", "Download the currently loaded data set of climate distributions. Reprodicible sampling is performed on the probability densities and output in table form.",
                 placement="right", options=list(container="body")),
-      report,
-      hr(style=mar_),
-      h5(strong("Download current plots"), style=mar_lr),
-      map(c("Annual_series", "Decadal_boxplots", "Period_density"), 
-          ~downloadButton(paste0("dlPlot_", tolower(.x)), gsub("_", " ", .x), style=action_btn_style))
+      report
     )
   })
   

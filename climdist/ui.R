@@ -95,9 +95,7 @@ function(request){
                   column(4,
                     selectInput("marginalize", "Merge distributions across", 
                       choices=c("", "RCPs"="RCP", "Models"="Model"), selected="", multiple=TRUE, width="100%")
-                  ),
-                  column(4, selectInput("clrby", "Color by", clrfctopts, width="100%")),
-                  column(4, selectInput("fctby", "Facet by", clrfctopts, width="100%"))
+                  )
                 ),
                 fluidRow(
                   column(4, 
@@ -122,26 +120,39 @@ function(request){
           fluidRow(tabBox(
             tabPanel("Decadal",
               uiOutput("statBoxes2"),
-              h4("Decadal distributions: box plots and observations"),
+              tagList(h4("Decadal distributions: box plots and observations"),
+                            downloadButton("dlPlot_decadal_boxplots", "Download plot", style=action_btn_style)),
                 fluidRow(
                   column(12,
                     withSpinner(
                       plotOutput("dec_plot", height="auto",
                         dblclick="dec_plot_dblclk", brush=brushOpts(id="dec_plot_brush", direction="x", resetOnNew=TRUE)))
                   )
-               )
+               ),
+              fluidRow(
+                column(3, selectInput("clrby_decadal", "Color by", clrfctopts, width="100%"), offset=6),
+                column(3, selectInput("fctby_decadal", "Facet by", clrfctopts, width="100%"))
+              )
             ),
             tabPanel("Annual",
               uiOutput("statBoxes1"),
               fluidRow(box(
                 withSpinner(
                   plotOutput("ts_plot", height="auto",
-                    dblclick="ts_plot_dblclk", brush=brushOpts(id="ts_plot_brush", direction="x", resetOnNew=TRUE))), 
-                title="Annual observations", width=12, collapsible=TRUE
+                    dblclick="ts_plot_dblclk", brush=brushOpts(id="ts_plot_brush", direction="x", resetOnNew=TRUE))),
+                fluidRow(
+                  column(3, selectInput("clrby_annual", "Color by", clrfctopts, width="100%"), offset=6),
+                  column(3, selectInput("fctby_annual", "Facet by", clrfctopts, width="100%"))
+                ),
+                title=tagList("Annual observations",
+                              downloadButton("dlPlot_annual_series", "Download plot", style=action_btn_style)), 
+                width=12, collapsible=TRUE
               )),
               fluidRow(div(id="denbox", box(
                 withSpinner(plotOutput("dist_plot", height="auto")), 
-                title="Period density", width=12, collapsible=TRUE, collapsed=TRUE
+                title=tagList("Period density",
+                              downloadButton("dlPlot_period_density", "Download plot", style=action_btn_style)), 
+                width=12, collapsible=TRUE, collapsed=TRUE
               )))
             ), id="results", selected="Annual", title=NULL, width=12, side="right"
           )
