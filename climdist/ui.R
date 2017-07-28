@@ -15,7 +15,7 @@ function(request){
       useShinyjs(),
       do.call(update_toastr_css, intro_css_args),
       
-      tags$head(tags$html(app_overlay(NULL, "snap_white_transparent_400h.png", "loading.png"))),
+      tags$head(tags$html(app_overlay(NULL, "snap_white.svg", "loading.png"))),
       tags$script("$(document).ready(function(){ $('#fade-wrapper').fadeIn(); });"),
       #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
@@ -24,7 +24,7 @@ function(request){
         menuItem("Information", icon=icon("info-circle"), tabName="info")
       ),
       uiOutput("dataLoadedSidebar"),
-      dashboard_footer("http://snap.uaf.edu/", "snap_white_transparent_400h.png", "SNAP Dashboards")
+      dashboard_footer("http://snap.uaf.edu/", "snap_white.svg", "SNAP Dashboards")
     ),
     dashboardBody(
       tabItems(
