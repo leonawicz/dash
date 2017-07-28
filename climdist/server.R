@@ -139,27 +139,25 @@ shinyServer(function(input, output, session) {
   })
   
   plot_dist <- reactive({
-    d_ts_brushed()
-    input$plot_btn
+    d_ts_brushed(); input$plot_btn; clrby_annual(); fctby_annual(); alpha_den(); facet_scales()
     isolate({
       distPlot(d_ts_brushed(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_den(), 
         fctby_annual(), facet_scales(), "density", preventPlot(), plottheme) 
     })
   })
   plot_ts <- reactive({
-    d()
-    input$plot_btn
-    rv_plots$ts_x
+    d(); input$plot_btn; rv_plots$ts_x; clrby_annual(); fctby_annual(); alpha_ts()
+    input$show_annual; input$fit_models; input$eq_pos; facet_scales()
     isolate({
       tsPlot(d_ts_brushed(), varName(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_ts(), 
         fctby_annual(), facet_scales(), input$show_annual, input$fit_models, input$eq_pos,
         preventPlot(), plottheme)
     })
   })
+  
   plot_dec <- reactive({
-    d()
-    input$plot_btn
-    rv_plots$dec_x
+    d(); input$plot_btn; rv_plots$dec_x; clrby_decadal(); fctby_decadal(); alpha_dec()
+    input$bptype; facet_scales()
     isolate({
       decPlot(d_dec_brushed(), primeAxis(), clrby_decadal(), colorvec_decadal(), alpha_dec(), 
         fctby_decadal(), facet_scales(), input$bptype, limit.sample, preventPlot(), plottheme)
