@@ -77,45 +77,33 @@ function(request){
               column(7,
                 fluidRow(
                   column(4,
-                    selectInput("mapset", "Change map layer", choices=mapsets, width="100%")
+                    selectInput("mapset", "Change map layer", mapsets, width="100%")
                   ),
                   column(8,
                     uiOutput("mapset_regions")
                   )
                 ),
                 fluidRow(
-                  column(4,
-                    selectInput("variable", "Climate variable", choices=variables, selected=variables[2], width="100%")
-                  ),
-                  column(4,
-                    selectInput("rcps", "RCP", choices=rcps, selected=rcps[1], multiple=TRUE, width="100%")
-                  ),
-                  column(4,
-                    selectInput("gcms", "Model", choices=list(GCMs=gcms, Basline=list(cru)), selected=gcms[1], multiple=TRUE, width="100%")
-                  )
+                  column(4, selectInput("variable", "Climate variable", variables, variables[2], width="100%")),
+                  column(4, selectInput("rcps", "RCP", rcps, rcps[1], multiple=TRUE, width="100%")),
+                  column(4, selectInput("gcms", "Model", list(GCMs=gcms, Baseline=list(cru)), gcms[1], multiple=TRUE, width="100%"))
                 ),
                 fluidRow(
-                  column(4,
-                    selectInput("seasons", "Season", choices=seasons, selected=seasons[1], multiple=TRUE, width="100%")
+                  column(4, selectInput("seasons", "Season", seasons, seasons[1], multiple=TRUE, width="100%")),
+                  column(8, sliderInput("yrs", "Years", period[1], period[2], c(2006, 2099), 1, sep="", width="100%"))
+                ),
+                fluidRow(
+                  column(4, 
+                    selectInput("marginalize", NULL, mergeopts, "", multiple=TRUE, width="100%"),
+                    bsTooltip("marginalize", mergeopts_tooltip, placement="left")
                   ),
-                  column(8,
-                    sliderInput("yrs", "Years", min=period[1], max=period[2], value=c(2006, 2099), step=1, sep="", width="100%")
-                  )
-                ),
-                fluidRow(
-                  column(4,
-                    selectInput("marginalize", "Merge distributions across", 
-                      choices=c("", "RCPs"="RCP", "Models"="Model"), selected="", multiple=TRUE, width="100%")
-                  )
-                ),
-                fluidRow(
-                  column(6, 
+                  column(4, 
                     conditionalPanel(req_inputs,
                       actionButton("go_btn", "Build distributions", class="btn-block btn-go", icon("signal")),
                       bsTooltip("go_btn", "Build probability distributions based on current data selections.")
                     )
                   ),
-                  column(6,
+                  column(4,
                     actionButton("settings_btn", "Additional settings", class="btn-block", icon("gear")),
                     bsTooltip("settings_btn", "Addional specifications for data selection and plot formatting.")
                   )

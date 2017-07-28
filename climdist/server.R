@@ -142,14 +142,14 @@ shinyServer(function(input, output, session) {
   })
   
   plot_dist <- reactive({
-    d_ts_brushed(); input$plot_btn; metric(); clrby_annual(); fctby_annual(); alpha_den(); facet_scales()
+    d_ts_brushed(); metric(); clrby_annual(); fctby_annual(); alpha_den(); facet_scales()
     isolate({
       distPlot(d_ts_brushed(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_den(), 
         fctby_annual(), facet_scales(), "density", preventPlot(), plottheme) 
     })
   })
   plot_ts <- reactive({
-    d(); input$plot_btn; rv_plots$ts_x; metric(); clrby_annual(); fctby_annual(); alpha_ts()
+    d(); rv_plots$ts_x; metric(); clrby_annual(); fctby_annual(); alpha_ts()
     input$show_annual; input$fit_models; input$eq_pos; facet_scales()
     isolate({
       tsPlot(d_ts_brushed(), varName(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_ts(), 
@@ -159,7 +159,7 @@ shinyServer(function(input, output, session) {
   })
   
   plot_dec <- reactive({
-    d(); input$plot_btn; rv_plots$dec_x; metric(); clrby_decadal(); fctby_decadal(); alpha_dec()
+    d(); rv_plots$dec_x; metric(); clrby_decadal(); fctby_decadal(); alpha_dec()
     input$bptype; facet_scales()
     isolate({
       decPlot(d_dec_brushed(), primeAxis(), clrby_decadal(), colorvec_decadal(), alpha_dec(), 
@@ -193,10 +193,11 @@ shinyServer(function(input, output, session) {
   
   lapply(1:2, function(i, x, p=c("annual", "decadal")){
     output[[paste0("statBoxes", i)]] <- renderUI({
-      input$plot_btn
       x <- if(i==1) d_ts_brushed() else d_dec_brushed()
+      clr <- list(clrby_annual(), clrby_decadal())[[i]]
+      metric()
       isolate({ # NOTE: if decide to adjust height by colorby()* reactives, more sbArgs()* reactives required
-        stat_boxes_group(x, list(clrby_annual(), clrby_decadal())[[i]], rnd=sbArgs()$rnd, type=p[i], height=sbArgs()$h, 
+        stat_boxes_group(x, clr, rnd=sbArgs()$rnd, type=p[i], height=sbArgs()$h, 
           width.icon=sbArgs()$w, text.size=sbArgs()$s.t, value.size=sbArgs()$s.v, prevent=preventPlot())
       })
     })
