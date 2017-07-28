@@ -48,10 +48,7 @@ shinyServer(function(input, output, session) {
   output$Map <- renderLeaflet(mapSelect())
   outputOptions(output ,"Map", suspendWhenHidden=FALSE)
   
-  metric <- reactive({
-    rv$go
-    isolate( is.null(input$metric) || input$metric=="Metric" )
-  })
+  metric <- reactive({ is.null(input$metric) || input$metric=="Metric" })
   cru_selected <- reactive({ cru %in% input$gcms })
   i <- reactive({
     list(rcps=input$rcps, gcms=input$gcms, 
@@ -95,12 +92,18 @@ shinyServer(function(input, output, session) {
     })
   })
   
-  d <- reactive({
+  d_prepped <- reactive({
     rv$go
     isolate({
       req(d_sub())
-      dist_data(d_sub(), input$variable, input$marginalize, seed=1, metric(), input$yrs, rcp.min.yr, cru.max.yr, i()[[2]], cru)
+      dist_data(d_sub(), input$variable, input$marginalize, seed=1, NULL, input$yrs, rcp.min.yr, cru.max.yr, i()[[2]], cru)
     })
+  })
+  
+  d <- reactive({
+    d_prepped()
+    metric()
+    isolate(clim_convert_round(d_prepped(), metric()))
   })
   
   varName <- reactive({ names(variables)[match(input$variable, variables)] })
@@ -139,14 +142,14 @@ shinyServer(function(input, output, session) {
   })
   
   plot_dist <- reactive({
-    d_ts_brushed(); input$plot_btn; clrby_annual(); fctby_annual(); alpha_den(); facet_scales()
+    d_ts_brushed(); input$plot_btn; metric(); clrby_annual(); fctby_annual(); alpha_den(); facet_scales()
     isolate({
       distPlot(d_ts_brushed(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_den(), 
         fctby_annual(), facet_scales(), "density", preventPlot(), plottheme) 
     })
   })
   plot_ts <- reactive({
-    d(); input$plot_btn; rv_plots$ts_x; clrby_annual(); fctby_annual(); alpha_ts()
+    d(); input$plot_btn; rv_plots$ts_x; metric(); clrby_annual(); fctby_annual(); alpha_ts()
     input$show_annual; input$fit_models; input$eq_pos; facet_scales()
     isolate({
       tsPlot(d_ts_brushed(), varName(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_ts(), 
@@ -156,7 +159,7 @@ shinyServer(function(input, output, session) {
   })
   
   plot_dec <- reactive({
-    d(); input$plot_btn; rv_plots$dec_x; clrby_decadal(); fctby_decadal(); alpha_dec()
+    d(); input$plot_btn; rv_plots$dec_x; metric(); clrby_decadal(); fctby_decadal(); alpha_dec()
     input$bptype; facet_scales()
     isolate({
       decPlot(d_dec_brushed(), primeAxis(), clrby_decadal(), colorvec_decadal(), alpha_dec(), 
@@ -257,7 +260,7 @@ shinyServer(function(input, output, session) {
       filename=function() { paste0(ids[i], ".pdf" ) },
       content=function(file){ cairo_pdf(file, 12, 7); print(plots[[i]]); dev.off() }
     ) }, 
-    ids=c("annual_series", "decadal_boxplots", "period_density"), 
+    ids=c("annual", "decadal", "period"), 
     plots=list(plot_ts(), plot_dec(), plot_dist())
   )
   
