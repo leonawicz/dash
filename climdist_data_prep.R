@@ -107,7 +107,8 @@ limit.sample <- TRUE # shrink final sampling by a factor of number of RCPs tmes 
 action_btn_style <- "color: black; margin: 10px 15px 10px 15px; width: 200px;" # action button styling
 axis_scales <- c("Fixed"="fixed", "Free"="free", "Free X"="free_x", "Free Y"="free_y") # facet scale options
 req_inputs <- c("regions", "rcps", "seasons", "gcms") # inputs that must be non-null to proceed in app
-clrfctopts <- c("", "RCP", "Model", "Season", "Region") # available variables for coloring/faceting plots
+clropts <- c("Color by..."="", "RCP", "Model", "Season", "Region") # available variables for coloring/faceting plots
+fctopts <- c("Facet by..."="", "RCP", "Model", "Season", "Region")
 faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "factsheet_about", "apps") # FAQs to load from apputils
 intro_bg <- "https://s-media-cache-ak0.pinimg.com/originals/4a/95/21/4a9521be7331ee5a44073edbd8492fca.jpg"
 intro_css_args <- list(
@@ -120,5 +121,5 @@ intro_css_args <- list(
 objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 
           'period', 'variables', 'seasons', 'stats', 'mapset_colIDs',
           'default_mapset', 'regions_list_default', 'regions_selected_default', 'cru.max.yr', 'rcp.min.yr',
-          'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clrfctopts', 'faqs', 'intro_css_args')
+          'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clropts', 'fctopts', 'faqs', 'intro_css_args')
 save(list=objs, file="climdist/appData/appData.RData") # general data
