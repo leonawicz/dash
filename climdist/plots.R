@@ -1,4 +1,5 @@
-distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, type, prevent, plottheme){
+distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, type, 
+                     prevent, plottheme, condense_legend=FALSE){
   if(prevent) return()
   yrs <- range(data$Year)
   yrs <- if(length(unique(yrs)) > 1) seq(yrs[1], yrs[2]) else yrs[1]
@@ -11,7 +12,7 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, type, p
       g <- g + geom_density(fill="#A5A5A5", colour="white", alpha=alpha)
       g <- g + geom_line(colour="#3366FF", size=1, stat="density")
     } else {
-      lgd_rows <- if(nlevels(data[[clrby]]) > 2) 2 else 1
+      lgd_rows <- if(condense_legend && nlevels(data[[clrby]]) > 2) 2 else 1
       g <- g + geom_density(aes_string(fill=clrby), colour="white", alpha=alpha)
       g <- g + geom_line(aes_string(colour=clrby), size=1, stat="density")
     }
@@ -49,7 +50,7 @@ tsPlot <- function(data, variable, ylb, clrby, clrvec, alpha, fctby, fct_scales,
   }
   if(!is.null(fitted_models)){
     for(i in fitted_models) g <- g_fitted(g, i)
-    if("lm" %in% fitted_models){
+    if(eq_pos!="none" && "lm" %in% fitted_models){
       g <- g + ggpmisc::stat_poly_eq(data=data2, formula=y ~ x, eq.with.lhs=lhs, eq.x.rhs=rhs,
                  label.x.npc=eq_pos[2], label.y.npc=eq_pos[1],
                  aes(label=paste(..eq.label.., ..rr.label.., sep = "~~~")), parse=TRUE, size=5)

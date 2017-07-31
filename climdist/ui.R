@@ -44,7 +44,8 @@ function(request){
                 sliderInput("alpha_ts", "Transparency", 0.1, 1, 0.1, 0.1, sep="", width="100%"),
                 checkboxGroupInput("show_annual", "Show points", c("Means", "Observations"), "Means", inline=TRUE, width="100%"),
                 checkboxGroupInput("fit_models", "Statistical models", c("lm", "glm", "rlm", "gam", "loess"), "lm", inline=TRUE, width="100%"),
-                selectInput("eq_pos", "Linear model summary", c("Top left", "Top right", "Bottom left", "Bottom right"), width="100%")
+                selectInput("eq_pos", "Linear model summary", 
+                            c("None", "Top left", "Top right", "Bottom left", "Bottom right"), "Top left", width="100%")
               ),
               column(4,
                 h4("Period density curves"),
