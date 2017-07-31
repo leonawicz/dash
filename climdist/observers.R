@@ -87,7 +87,7 @@ observe({
              Model=factor(ifelse(files[i, 3]=="ts40", cru, files[i, 3]), levels=c(cru, gcms)),
              Region=factor(basename(path), levels=reg),
              Var=factor(files[i, 1], levels=variables),
-             Season=factor(files[i, 4], levels=seasons)) %>%
+             Season=factor(files[i, 4], levels=as.character(unlist(seasons)))) %>%
       select(RCP, Model, Region, Var, Season, Year, Val, Prob)
     }
     progress <- shiny::Progress$new()
