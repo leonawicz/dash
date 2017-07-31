@@ -8,7 +8,8 @@ uni <- reactive({
   x
 })
 
-report_stats <- reactive({ sbg_to_tables(d(), clrby(), sbArgs()$rnd) })
+report_stats_annual <- reactive({ sbg_to_tables(d(), clrby_annual(), sbArgs()$rnd) })
+report_stats_decadal <- reactive({ sbg_to_tables(d(), clrby_decadal(), sbArgs()$rnd) })
 annual_plot_content <- reactive({
   x <- c("Means", "Observations")
   y <- input$show_annual
@@ -49,9 +50,12 @@ output$report <- downloadHandler(
       plot_den=plot_dist(),
       plot_dec=plot_dec(),
       cru=cru,
-      clrby=clrby(),
-      fctby=fctby(),
-      tables=report_stats(),
+      clrbyann=clrby_annual(),
+      fctbyann=fctby_annual(),
+      tablesann=report_stats_annual(),
+      clrbydec=clrby_decadal(),
+      fctbydec=fctby_decadal(),
+      tablesdec=report_stats_decadal(),
       anncontent=annual_plot_content(),
       annlm="lm" %in% input$fit_models,
       deccontent=decadal_plot_content()
