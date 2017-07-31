@@ -89,7 +89,7 @@ function(request){
                   column(4, selectInput("gcms", "Model", list(GCMs=gcms, Baseline=list(cru)), gcms[1], multiple=TRUE, width="100%"))
                 ),
                 fluidRow(
-                  column(4, selectInput("seasons", "Season", seasons, seasons[1], multiple=TRUE, width="100%")),
+                  column(4, selectInput("seasons", "Season", seasons, seasons[[1]][1], multiple=TRUE, width="100%")),
                   column(8, sliderInput("yrs", "Years", period[1], period[2], c(2006, 2099), 1, sep="", width="100%"))
                 ),
                 fluidRow(
