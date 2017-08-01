@@ -7,15 +7,18 @@ app_intro <- list(
 )
 
 shinyServer(function(input, output, session) {
-  source("observers.R", local=TRUE) # map and region selectInput observers
-  source("tour.R", local=TRUE) # introjs tour
-  
-  mapset_reg_id <- reactive("NAME") #reactive({ mapset_colIDs[match(input$mapset, mapsets)] })
-  
-  rv <- reactiveValues(d=NULL, current_files=NULL, current_regions=NULL, load_new_files=TRUE, cru=NULL,
-          regions=regions_list_default, shp=shp.list[[default_mapset]], go=1, intro_toast_done=FALSE)
+
+  # reactive values
+  rv <- reactiveValues(d=NULL, d_ts_b=NULL, d_dec_b=NULL, current_files=NULL, current_regions=NULL, 
+                       load_new_files=TRUE, cru=NULL, regions=regions_list_default, 
+                       shp=shp.list[[default_mapset]], go=1, intro_toast_done=FALSE)
   rv_plots <- reactiveValues(ts_x=NULL, ts_y=NULL, ts_brush=NULL, dec_x=NULL, dec_y=NULL, dec_brush=NULL)
   
+  source("observers.R", local=TRUE) # source observers for maps, region inputs, interactive plots and data sets
+  source("tour.R", local=TRUE) # introjs tour
+  
+  # map/region-related objects
+  mapset_reg_id <- reactive("NAME") #reactive({ mapset_colIDs[match(input$mapset, mapsets)] })
   mapset_labs <- reactive({ names(mapsets)[match(input$mapset, mapsets)] })
   
   output$mapset_regions <- renderUI({
@@ -34,11 +37,6 @@ shinyServer(function(input, output, session) {
     input$regions
   })
   
-  alpha_den <- reactive({ if(is.null(input$alpha_den)) 1 else input$alpha_den })
-  alpha_ts <- reactive({ if(is.null(input$alpha_ts)) 0.1 else input$alpha_ts })
-  alpha_dec <- reactive({ if(is.null(input$alpha_dec)) 0.1 else input$alpha_dec })
-  facet_scales <- reactive({ if(is.null(input$facet_scales)) "fixed" else input$facet_scales })
-  
   # Initialize map and add polygons
   mapSelect <- reactive({
     xyz <- split(c(rep(c(-135, 61, 3), 2), rep(c(-155, 65, 4), 8)), rep(1:10, each=3))
@@ -48,6 +46,11 @@ shinyServer(function(input, output, session) {
   output$Map <- renderLeaflet(mapSelect())
   outputOptions(output ,"Map", suspendWhenHidden=FALSE)
   
+  # reactive inputs
+  alpha_den <- reactive({ if(is.null(input$alpha_den)) 1 else input$alpha_den })
+  alpha_ts <- reactive({ if(is.null(input$alpha_ts)) 0.1 else input$alpha_ts })
+  alpha_dec <- reactive({ if(is.null(input$alpha_dec)) 0.1 else input$alpha_dec })
+  facet_scales <- reactive({ if(is.null(input$facet_scales)) "fixed" else input$facet_scales })
   metric <- reactive({ is.null(input$metric) || input$metric=="Metric" })
   cru_selected <- reactive({ cru %in% input$gcms })
   i <- reactive({
@@ -56,6 +59,7 @@ shinyServer(function(input, output, session) {
       reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
   })
   
+  # file loading
   files <- reactive({
     cruId <- "ts40"
     rcps_string <- tolower(gsub("[ \\.]", "", input$rcps))
@@ -71,6 +75,7 @@ shinyServer(function(input, output, session) {
     cbind(files, Var5=paste0(files[,1], "_", files[,2], "_", files[,3], "_", files[,4], ".rds"))
   })
   
+  # data frames
   noData <- reactive({ any(sapply(i(), is.null)) || is.null(rv$d) })
   
   d_sub <- reactive({
@@ -106,27 +111,6 @@ shinyServer(function(input, output, session) {
     isolate(clim_convert_round(d_prepped(), metric()))
   })
   
-  varName <- reactive({ names(variables)[match(input$variable, variables)] })
-  yrs <- reactive({ seq(input$yrs[1], input$yrs[2]) })
-  clrby_annual <- reactive({ if(is.null(input$clrby_annual) || input$clrby_annual=="") NULL else input$clrby_annual })
-  fctby_annual <- reactive({ if(is.null(input$fctby_annual) || input$fctby_annual=="") NULL else input$fctby_annual })
-  clrby_decadal <- reactive({ if(is.null(input$clrby_decadal) || input$clrby_decadal=="") NULL else input$clrby_decadal })
-  fctby_decadal <- reactive({ if(is.null(input$fctby_decadal) || input$fctby_decadal=="") NULL else input$fctby_decadal })
-  colorvec_annual <- reactive({ if(is.null(clrby_annual())) NULL else tolpal(length(unique(d()[[clrby_annual()]]))) })
-  colorvec_decadal <- reactive({ if(is.null(clrby_decadal())) NULL else tolpal(length(unique(d()[[clrby_decadal()]]))) })
-  preventPlot <- reactive({ is.null(d()) || nrow(d())==0 })
-  plotHeight <- reactive({ if(preventPlot()) 0 else 400 })
-  
-  primeAxis <- reactive({
-    v <- varName()
-    if(metric()){
-      z <- if(v=="Precipitation") paste(v,"(mm)") else bquote(.(paste(v, "("))~degree~C~")")
-    } else {
-      z <- if(v=="Precipitation") paste(v,"(in)") else bquote(.(paste(v, "("))~degree~F~")")
-    }
-    z
-  })
-  
   d_ts_brushed <- reactive({
     d()
     x <- rv_plots$ts_x
@@ -141,40 +125,62 @@ shinyServer(function(input, output, session) {
     isolate(brushed_data(d(), x, b, "decadal"))
   })
   
+  # plot-related reactive objects
+  varName <- reactive({ names(variables)[match(input$variable, variables)] })
+  yrs <- reactive({ seq(input$yrs[1], input$yrs[2]) })
+  clrby_annual <- reactive({ if(is.null(input$clrby_annual) || input$clrby_annual=="") NULL else input$clrby_annual })
+  fctby_annual <- reactive({ if(is.null(input$fctby_annual) || input$fctby_annual=="") NULL else input$fctby_annual })
+  clrby_decadal <- reactive({ if(is.null(input$clrby_decadal) || input$clrby_decadal=="") NULL else input$clrby_decadal })
+  fctby_decadal <- reactive({ if(is.null(input$fctby_decadal) || input$fctby_decadal=="") NULL else input$fctby_decadal })
+  colorvec_annual <- reactive({ if(is.null(clrby_annual())) NULL else tolpal(length(unique(d()[[clrby_annual()]]))) })
+  colorvec_decadal <- reactive({ if(is.null(clrby_decadal())) NULL else tolpal(length(unique(d()[[clrby_decadal()]]))) })
+  preventPlot <- reactive({ is.null(d()) || nrow(d())==0 || any(is.na(d()$Val)) })
+  plotHeight <- reactive({ if(preventPlot()) 0 else 400 })
+  
+  primeAxis <- reactive({
+    v <- varName()
+    if(metric()){
+      z <- if(v=="Precipitation") paste(v,"(mm)") else bquote(.(paste(v, "("))~degree~C~")")
+    } else {
+      z <- if(v=="Precipitation") paste(v,"(in)") else bquote(.(paste(v, "("))~degree~F~")")
+    }
+    z
+  })
+  
+  # reactive outputs: plots
   plot_dist <- reactive({
-    d_ts_brushed(); metric(); clrby_annual(); fctby_annual(); alpha_den(); facet_scales()
+    rv$d_ts_b; rv_plots$ts_x; metric(); clrby_annual(); fctby_annual(); alpha_den(); facet_scales()
     isolate({
       distPlot(d_ts_brushed(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_den(), 
         fctby_annual(), facet_scales(), "density", preventPlot(), plottheme) 
     })
   })
   plot_ts <- reactive({
-    d(); rv_plots$ts_x; metric(); clrby_annual(); fctby_annual(); alpha_ts()
+    rv$d_ts_b; rv_plots$ts_x; metric(); clrby_annual(); fctby_annual(); alpha_ts()
     input$show_annual; input$fit_models; input$eq_pos; facet_scales()
     isolate({
-      tsPlot(d_ts_brushed(), varName(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_ts(), 
+      tsPlot(rv$d_ts_b, d(), varName(), primeAxis(), clrby_annual(), colorvec_annual(), alpha_ts(), 
         fctby_annual(), facet_scales(), input$show_annual, input$fit_models, input$eq_pos,
-        preventPlot(), plottheme)
+        preventPlot(), plottheme, rv_plots$ts_x)
     })
   })
   
   plot_dec <- reactive({
-    d(); rv_plots$dec_x; metric(); clrby_decadal(); fctby_decadal(); alpha_dec()
+    rv$d_dec_b; rv_plots$dec_x; metric(); clrby_decadal(); fctby_decadal(); alpha_dec()
     input$bptype; facet_scales()
     isolate({
-      decPlot(d_dec_brushed(), primeAxis(), clrby_decadal(), colorvec_decadal(), alpha_dec(), 
-        fctby_decadal(), facet_scales(), input$bptype, limit.sample, preventPlot(), plottheme)
+      decPlot(rv$d_dec_b, d(), primeAxis(), clrby_decadal(), colorvec_decadal(), alpha_dec(), 
+        fctby_decadal(), facet_scales(), input$bptype, limit.sample, preventPlot(), plottheme, rv_plots$dec_x)
     })
   })
   output$dist_plot <- renderPlot({ plot_dist() }, height=function() plotHeight())
   output$ts_plot <- renderPlot({ plot_ts() }, height=function() plotHeight())
   output$dec_plot <- renderPlot({ plot_dec() }, height=function() plotHeight())
   
-  # Observe plot for hiding launch overlay
-  observe({
-    if(!is.null(plot_ts())) shinyjs::hide("fade-wrapper", anim=TRUE, animType="fade", time=1)  
-  })
+  # Observe plot for hiding launch overlay (must appear in code after plot_ts() is defined)
+  observe(if(!is.null(plot_ts())) shinyjs::hide("fade-wrapper", anim=TRUE, animType="fade", time=1))
   
+  # reactive outputs: stat boxes
   sbArgs <- reactive({
     rnd <- if(d()$Var[1] %in% c("tas", "tasmin", "tasmax")) 1 else 0
     s.t <- 150
@@ -203,11 +209,58 @@ shinyServer(function(input, output, session) {
     })
   })
   
-  #outputOptions(output, "dist_plot", suspendWhenHidden=FALSE)
-  outputOptions(output, "ts_plot", suspendWhenHidden=FALSE)
-  outputOptions(output, "dec_plot", suspendWhenHidden=FALSE)
-  outputOptions(output, "statBoxes1", suspendWhenHidden=FALSE)
-  outputOptions(output, "statBoxes2", suspendWhenHidden=FALSE)
+  slr <- reactive({
+    x <- d_ts_brushed()
+    if(!is.null(clrby_annual())){
+      lev <- levels(x[[clrby_annual()]])
+      x <- x %>% split(.[[clrby_annual()]])
+      idx <- which(purrr::map_lgl(x, ~nrow(.x) > 0))
+      x <- x[idx]
+      lev <- lev[lev %in% names(x)]
+      x <- x[match(lev, names(x))]
+    } else {
+      x <- list(x)
+      names(x) <- "Selected data"
+    }
+    x <- x %>% map(~group_by(.x, Year) %>% summarise(Val=mean(Val))) %>% map(~lm(.x$Val ~ .x$Year))
+    map(x, ~list(coef=round(summary(.x)$coefficients[,1], 2), 
+                 pval=round(summary(.x)$coefficients[,4], 3), 
+                 r2=round(summary(.x)$r.squared, 3)))
+  })
+  
+  output$parsBoxes <- renderUI({
+    x <- slr()
+    id <- names(x)
+    clrby <- clrby_annual()
+    if(is.null(clrby)){
+      clrs <- list(c("light-blue", "blue", "blue", "light-blue", "light-blue"))
+    } else {
+      clrs <- transpose(map(1:5, ~substring(tolpal(length(x)), 2))) %>% map(~unlist(.x))
+    }
+    lmStatPanel <- function(x, id, clrs, text=c("Intercept", "Slope", "p value", "p value", "R-squared"), value.size=75, text.size=150){
+      text <- purrr::map(text, ~pTextSize(.x, text.size, margin=0))
+      val <- purrr::map(unlist(x), ~pTextSize(.x, value.size))
+      tabPanel(id,
+        fluidRow(
+          column(6, valueBox(val[1], text[[1]], icon=apputils::icon(list(src=statIcon("b0"), width="90px"), lib="local"), color=clrs[1], width=NULL)),
+          column(6, valueBox(val[3], text[[3]], icon=apputils::icon(list(src=statIcon("pvalue"), width="90px"), lib="local"), color=clrs[3], width=NULL))
+        ),
+        fluidRow(
+          column(6, valueBox(val[2], text[[2]], icon=apputils::icon(list(src=statIcon("b1"), width="90px"), lib="local"), color=clrs[2], width=NULL)),
+          column(6, valueBox(val[4], text[[4]], icon=apputils::icon(list(src=statIcon("pvalue"), width="90px"), lib="local"), color=clrs[4], width=NULL))
+        ),
+        fluidRow(
+          column(6, valueBox(val[5], text[[5]], icon=apputils::icon(list(src=statIcon("r2"), width="90px"), lib="local"), color=clrs[5], width=NULL))
+        )
+      )
+    }
+    tps <- map(rev(seq_along(x)), ~lmStatPanel(x[[.x]], id[.x], clrs[[.x]]))
+    do.call(tabBox, c(tps, list(id="model_summary", selected=id[1], title="Regression", width=12, side="right")))
+  })
+  
+  lapply(c("dist_plot", "ts_plot", "dec_plot", "statBoxes1", "statBoxes2", "parsBoxes"),
+         function(x, o) outputOptions(o, x, suspendWhenHidden=FALSE), o=output)
+  
   source("report.R", local=TRUE)
   output$dataLoadedSidebar <- renderUI({
     if(noData()) return()
