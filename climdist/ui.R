@@ -3,10 +3,15 @@ req_inputs <- inputs_not_null(req_inputs)
 
 plot_opts_row <- function(id, clrfct=TRUE, dl="Download", w="100%"){
   x <- paste0(c("clrby_", "fctby_", "dlPlot_"), id)
-  dl <- column(2, downloadButton(x[3], dl, class="btn-block"), offset=ifelse(clrfct, 6, 10))
-  if(clrfct) fluidRow(
+  if(clrfct){
+    dl <- column(2, downloadButton(x[3], dl, class="btn-block"), offset=6)
+    fluidRow(
     column(2, selectInput(x[1], NULL, clropts, width=w)),
-    column(2, selectInput(x[2], NULL, fctopts, width=w)), dl) else fluidRow(dl)
+    column(2, selectInput(x[2], NULL, fctopts, width=w)), dl)
+  } else {
+    dl <- column(4, downloadButton(x[3], dl, class="btn-block"), offset=8)
+    fluidRow(dl)
+  }
 }
 
 function(request){
@@ -121,7 +126,7 @@ function(request){
                   column(12,
                     withSpinner(
                       plotOutput("dec_plot", height="auto",
-                        dblclick="dec_plot_dblclk", brush=brushOpts(id="dec_plot_brush", direction="x", resetOnNew=TRUE)))
+                        dblclick="dec_plot_dblclk", brush=brushOpts(id="dec_plot_brush", direction="x", resetOnNew=FALSE)))
                   )
                ),
               plot_opts_row("decadal")
@@ -131,15 +136,16 @@ function(request){
               fluidRow(box(
                 withSpinner(
                   plotOutput("ts_plot", height="auto",
-                    dblclick="ts_plot_dblclk", brush=brushOpts(id="ts_plot_brush", direction="x", resetOnNew=TRUE))),
+                    dblclick="ts_plot_dblclk", brush=brushOpts(id="ts_plot_brush", direction="x", resetOnNew=FALSE))),
                 plot_opts_row("annual"),
                 title="Annual observations", width=12, collapsible=TRUE
               )),
-              fluidRow(div(id="denbox", box(
-                withSpinner(plotOutput("dist_plot", height="auto")),
-                plot_opts_row("period", FALSE),
-                title="Period density", width=12, collapsible=TRUE, collapsed=TRUE
-              )))
+              fluidRow(
+                column(6, div(id="lmbox", uiOutput("parsBoxes"))),
+                column(6, div(id="denbox", h4("Period density"),
+                  withSpinner(plotOutput("dist_plot", height="auto")),
+                  plot_opts_row("period", FALSE)))
+              )
             ), id="results", selected="Annual", title=NULL, width=12, side="right"
           )
         )),
