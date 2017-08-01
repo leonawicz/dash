@@ -119,40 +119,6 @@ observe({
   })
 })
 
-# Annual time series
-# double click ggplot observation
-observeEvent(input$ts_plot_dblclk, {
-  brush <- input$ts_plot_brush
-  if(!is.null(brush)){
-    rv_plots$ts_x <- c(brush$xmin, brush$xmax)
-    rv_plots$ts_y <- c(brush$ymin, brush$ymax)
-  } else {
-    rv_plots$ts_x <- NULL
-    rv_plots$ts_y <- NULL
-  }
-})
-
-# brush ggplot observation
-observeEvent(input$ts_plot_brush, {
-  brush <- input$ts_plot_brush
-  if(!is.null(brush)) rv_plots$ts_brush <- brush
-})
-
-# Decadal time series
-# double click ggplot observation
-observeEvent(input$dec_plot_dblclk, {
-  brush <- input$dec_plot_brush
-  if(!is.null(brush)){
-    rv_plots$dec_x <- c(brush$xmin, brush$xmax)
-    rv_plots$dec_y <- c(brush$ymin, brush$ymax)
-  } else {
-    rv_plots$dec_x <- NULL
-    rv_plots$dec_y <- NULL
-  }
-})
-
-# brush ggplot observation
-observeEvent(input$dec_plot_brush, {
-  brush <- input$dec_plot_brush
-  if(!is.null(brush)) rv_plots$dec_brush <- brush
-})
+# Observe plots
+ggObserve(session, input, rv, rv_plots, "ts_plot_dblclk", "ts_plot_brush", isolate(d_ts_brushed), "ts_x", NULL, "d_ts_b")
+ggObserve(session, input, rv, rv_plots, "dec_plot_dblclk", "dec_plot_brush", isolate(d_dec_brushed), "dec_x", NULL, "d_dec_b", FALSE)
