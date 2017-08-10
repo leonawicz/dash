@@ -20,7 +20,7 @@ distPlot <- function(data, xlb, clrby, clrvec, alpha, fctby, fct_scales, type,
     g <- g + geom_histogram(aes_string(fill=clrby), colour=clr, position="dodge", alpha=alpha)
   }
   lgd <- guide_legend(override.aes=list(alpha=1), nrow=lgd_rows)
-  g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
+  g <- colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
   g + theme_bw(base_size=18) + plottheme + labs(x=xlb, y=ylb) + guides(fill=lgd)
     
 }
@@ -38,7 +38,7 @@ tsPlot <- function(data, data_master, variable, ylb, clrby, clrvec, alpha, fctby
   } else yrs <- round(xlim)
   yrs <- if(length(unique(yrs)) > 1) seq(yrs[1], yrs[2]) else yrs[1]
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
-  pos <- .getPosition(jitter=TRUE, clrby)
+  pos <- getPosition(jitter=TRUE, clrby)
   n.facets <- if(is.null(fctby)) 1 else length(unique(data[[fctby]]))
   breaks <- get_breaks(yrs, n.facets)
   vars <- c("RCP", "Model", "Region", "Var", "Season", "Year")
@@ -72,7 +72,7 @@ tsPlot <- function(data, data_master, variable, ylb, clrby, clrvec, alpha, fctby
     g <- g + geom_point(data=data2)
     if(excluded) g <- g + geom_point(data=d_ex2, alpha=0.5)
   }
-  g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
+  g <- colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
   g +  theme_bw(base_size=18) + plottheme + theme(axis.text.x=element_text(angle=45, hjust=1)) + 
     labs(y=ylb) + guides(fill=lgd_alpha) +
     scale_x_continuous(limits=range(yrs), expand=c(0, 0), breaks=breaks, labels=breaks, minor_breaks=yrs)
@@ -82,7 +82,7 @@ decPlot <- function(data, data_master, ylb, clrby, clrvec, alpha, fctby, fct_sca
                     type, limit.sample, prevent, plottheme, xlim){
   if(prevent || any(is.na(data$Val))) return()
   lgd_alpha <- guide_legend(override.aes=list(alpha=1))
-  pos <- .getPosition(jitter=TRUE, clrby, dodgeable=TRUE)
+  pos <- getPosition(jitter=TRUE, clrby, dodgeable=TRUE)
   d_ex <- setdiff(data_master, data)
   excluded <- if(nrow(d_ex) > 0)  TRUE else FALSE
   
@@ -114,7 +114,7 @@ decPlot <- function(data, data_master, ylb, clrby, clrvec, alpha, fctby, fct_sca
     }
   }
   
-  g <- .colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
+  g <- colorFacet(g, data, clrby, clrvec, fctby, fct_scales)
   g + theme_bw(base_size=18) + plottheme + theme(axis.text.x=element_text(angle=45, hjust=1)) +
     labs(y=ylb) + guides(fill=lgd_alpha)
 }
