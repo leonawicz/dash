@@ -66,7 +66,8 @@ observe({
   input$overview_btn
   isolate({
     if(!is.null(input$overview_btn) && input$overview_btn > 0){
-      appintro(title=app_intro$title, message=app_intro$message, logo=app_intro$logo, toast.args=app_intro$toast.args)
+      appintro(title = app_intro$title, message = app_intro$message, logo = app_intro$logo, 
+               toast_args = app_intro$toast_args)
     }
   })
 })

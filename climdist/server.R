@@ -2,8 +2,8 @@ library(rvtable)
 plottheme <- get_plottheme()
 source("plots.R")
 app_intro <- list(
-  title=app_intro_title, message=app_intro_message, logo=app_intro_logo, 
-  toast.args=list(timeOut=0, extendedTimeOut=0)
+  title = app_intro_title, message = app_intro_message, logo = app_intro_logo, 
+  toast_args = list(timeOut = 0, extendedTimeOut = 0)
 )
 
 shinyServer(function(input, output, session) {
