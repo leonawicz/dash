@@ -152,8 +152,8 @@ function(request){
         tabItem(tabName="info",
           about_app,
           h2("Frequently asked questions"),
-          faq(faqs, bscollapse.args=list(id="faq", open="apps"), showcase.args=list(drop="climdist")),
-          contactinfo(list(uaf="UAFLogo_A_286.png", iarc="iarc_375.jpg", snap="snap_fullcolor_400h.png")), br()
+          faq(faqs, bscollapse_args = list(id = "faq", open = "apps"), showcase_args = list(drop = "climdist")),
+          contactinfo(snap = "snap_fullcolor_400h.png", iarc = "iarc_375.jpg", uaf = "UAFLogo_A_286.png"), br()
         )
       )
     ),
