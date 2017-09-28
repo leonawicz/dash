@@ -223,8 +223,8 @@ shinyServer(function(input, output, session) {
       names(x) <- "Selected data"
     }
     x <- x %>% map(~group_by(.x, Year) %>% summarise(Val=mean(Val))) %>% map(~lm(.x$Val ~ .x$Year))
-    map(x, ~list(coef=round(summary(.x)$coefficients[,1], 2), 
-                 pval=round(summary(.x)$coefficients[,4], 3), 
+    map(x, ~list(coef=round(summary(.x)$coefficients[, 1], 2), 
+                 pval=round(summary(.x)$coefficients[, 4], 3), 
                  r2=round(summary(.x)$r.squared, 3)))
   })
   
@@ -235,27 +235,57 @@ shinyServer(function(input, output, session) {
     if(is.null(clrby)){
       clrs <- list(c("light-blue", "blue", "blue", "light-blue", "light-blue"))
     } else {
-      clrs <- transpose(map(1:5, ~substring(tolpal(length(x)), 2))) %>% map(~unlist(.x))
+      clrs <- color_indexer(d_ts_brushed(), clrby)
+      clrs <- transpose(map(1:5, ~substring(clrs, 2))) %>% map(~unlist(.x))
     }
-    lmStatPanel <- function(x, id, clrs, text=c("Intercept", "Slope", "p value", "p value", "R-squared"), value.size=75, text.size=150){
+    lmStatPanel <- function(x, id, clrs, value.size = 75, text.size = 150, drop_int = TRUE){
+      text <- c("Intercept", "Slope", "p-value", "p-value", "R-squared")
+      if(drop_int) text <- text[c(2, 4, 5)]
       text <- purrr::map(text, ~pTextSize(.x, text.size, margin=0))
       val <- purrr::map(unlist(x), ~pTextSize(.x, value.size))
-      tabPanel(id,
-        fluidRow(
-          column(6, valueBox(val[1], text[[1]], icon=apputils::icon(list(src=statIcon("b0"), width="90px"), lib="local"), color=clrs[1], width=NULL)),
-          column(6, valueBox(val[3], text[[3]], icon=apputils::icon(list(src=statIcon("pvalue"), width="90px"), lib="local"), color=clrs[3], width=NULL))
-        ),
-        fluidRow(
-          column(6, valueBox(val[2], text[[2]], icon=apputils::icon(list(src=statIcon("b1"), width="90px"), lib="local"), color=clrs[2], width=NULL)),
-          column(6, valueBox(val[4], text[[4]], icon=apputils::icon(list(src=statIcon("pvalue"), width="90px"), lib="local"), color=clrs[4], width=NULL))
-        ),
-        fluidRow(
-          column(6, valueBox(val[5], text[[5]], icon=apputils::icon(list(src=statIcon("r2"), width="90px"), lib="local"), color=clrs[5], width=NULL))
+      if(drop_int) val <- val[c(2, 4, 5)]
+      if(drop_int){
+        tabPanel(id,
+          fluidRow(column(12, 
+            valueBox(val[1], text[[1]],
+                     icon=apputils::icon(list(src=statIcon("b1"), width="90px"), lib="local"), 
+                     color=clrs[1], width=NULL),
+            valueBox(val[2], text[[2]], 
+                     icon=apputils::icon(list(src=statIcon("pvalue"), width="90px"), lib="local"), 
+                     color=clrs[2], width=NULL),
+            valueBox(val[3], text[[3]], 
+                     icon=apputils::icon(list(src=statIcon("r2"), width="90px"), lib="local"), 
+                     color=clrs[1], width=NULL)
+          ))
         )
-      )
+      } else {
+        tabPanel(id,
+          fluidRow(
+            column(6, valueBox(val[1], text[[1]], 
+                               icon=apputils::icon(list(src=statIcon("b0"), width="90px"), lib="local"), 
+                               color=clrs[1], width=NULL)),
+            column(6, valueBox(val[3], text[[3]], 
+                               icon=apputils::icon(list(src=statIcon("pvalue"), width="90px"), lib="local"), 
+                               color=clrs[3], width=NULL))
+          ),
+          fluidRow(
+            column(6, valueBox(val[2], text[[2]], 
+                               icon=apputils::icon(list(src=statIcon("b1"), width="90px"), lib="local"), 
+                               color=clrs[2], width=NULL)),
+            column(6, valueBox(val[4], text[[4]], 
+                               icon=apputils::icon(list(src=statIcon("pvalue"), width="90px"), lib="local"), 
+                               color=clrs[4], width=NULL))
+          ),
+          fluidRow(
+            column(6, valueBox(val[5], text[[5]], 
+                               icon=apputils::icon(list(src=statIcon("r2"), width="90px"), lib="local"), 
+                               color=clrs[5], width=NULL))
+          )
+        )
+      }
     }
-    tps <- map(rev(seq_along(x)), ~lmStatPanel(x[[.x]], id[.x], clrs[[.x]]))
-    do.call(tabBox, c(tps, list(id="model_summary", selected=id[1], title="Regression", width=12, side="right")))
+    tps <- map(rev(seq_along(x)), ~lmStatPanel(x[[.x]], id[.x], clrs[[.x]], drop_int = TRUE))
+    do.call(tabBox, c(tps, list(id="model_summary", selected=id[1], title=NULL, width=12, side="right")))
   })
   
   lapply(c("dist_plot", "ts_plot", "dec_plot", "statBoxes1", "statBoxes2", "parsBoxes"),
