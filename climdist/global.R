@@ -1,4 +1,3 @@
-ptm <- proc.time()
 library(rintrojs)
 library(leaflet)
 library(shiny)
@@ -8,6 +7,7 @@ library(shinydashboard)
 library(shinytoastr)
 
 library(apputils)
+library(snaputils)
 library(MASS) # rlm
 library(sp)
 library(dplyr)

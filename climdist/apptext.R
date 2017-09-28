@@ -27,9 +27,9 @@ Tooltips are available throughout the app. Go into deeper detail with the intera
 
 about_app <- tagList(
   h2("About this application"),
-  HTML(read_md_paragraphs("text_about.txt", ptag=TRUE, collapse=TRUE)),
+  HTML(read_md_paragraphs("text_about.txt", ptag = TRUE, collapse = TRUE)),
   app_citation("Matthew Leonawicz", 2017,
-               title="Web application for Alaska and western Canada downscaled GCM output",
-               publisher="Scenarios Network for Alaska and Arctic Planning, University of Alaska Fairbanks",
-               url="http://shiny.snap.uaf.edu/climdist")
+               title = "Web application for Alaska and western Canada downscaled GCM output",
+               publisher = "Scenarios Network for Alaska and Arctic Planning, University of Alaska Fairbanks",
+               url = "http://shiny.snap.uaf.edu/climdist")
 )
