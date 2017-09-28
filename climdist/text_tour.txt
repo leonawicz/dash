@@ -39,30 +39,31 @@ Marginal distributions can be computed by integrating out levels of factors spec
 Note that integration will be more time-intensive for greater numbers of variables and their selected levels, 
 including the range of years selected. A progress bar will display in the bottom right corner.
 
-When multiple levels of a factor variable are included in the data selection, plots can be colored by levels.
-
-Faceting by a variable's levels works the same as with coloring.
-
 When user selections are complete, click here to load the relevant data slices, compile probability distributions,
 and draw summary plots.
 
 Additional settings pertaining to plot formatting can be found here.
 
-When the only changes made pertain to plot formatting, regenerate plots and statistics without reloading redundant data.
-This saves time, especially with large data sets or when computing marginal distributions as part of your data specifications.
-Rebuilding distributions is only necessary when data selections have changed.
-
 Results based on annual data are shown.
 Statistics are derived from the full spatial climate probability densities for the selected geographic region(s).
 These statistics are based on annual data over the full selected time period.
 
-The density plot shows climate probability distributions for the selected aggregate time period.
-
 The annual time series shows annual mean climate values with a fitted regression line and confidence band by default.
 Plot settings can be changed to show the distribution of individual annaul observations in place of or in addition to mean values.
-Brushing the time series with your mouse highlights a range of years The summary stat boxes and density plot 
-automatically update to reflect a distributional summary your selection.
+Brushing the time series with your mouse highlights a range of years.
+The summary stat boxes above, regression model output at the bottom left, and the density plot at the bottom right
+all automatically update to reflect your selection.
 You can zoom in by double-clicking on a brushed area. Double-click again to zoom out.
+
+When multiple levels of a factor variable are included in the data selection, plots can be colored by levels.
+
+Faceting by a variable's levels works the same as with coloring.
+
+PDF graphics of individual plots can be downloaded using each plot's associated download button.
+
+This panel shows linear regression model output based on the selected annual means where the climate variable is modeled as a function of time.
+
+The density plot shows climate probability distributions for the selected aggregate time period.
 
 On the decadal tab, the stats overview relates to decadal mean change and derives from the decadal distributions
 of annual climate values across space and within each decade.
