@@ -141,7 +141,7 @@ function(request){
                 title="Annual observations", width=12, collapsible=TRUE
               )),
               fluidRow(
-                column(6, div(id="lmbox", uiOutput("parsBoxes"))),
+                column(6, uiOutput("parsBoxes")),
                 column(6, div(id="denbox", h4("Period density"),
                   withSpinner(plotOutput("dist_plot", height="auto")),
                   plot_opts_row("period", FALSE)))
