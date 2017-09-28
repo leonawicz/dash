@@ -133,16 +133,16 @@ function(request){
             ),
             tabPanel("Annual",
               uiOutput("statBoxes1"),
-              fluidRow(box(
+              h4("Annual observations"),
+              fluidRow(
                 withSpinner(
                   plotOutput("ts_plot", height="auto",
                     dblclick="ts_plot_dblclk", brush=brushOpts(id="ts_plot_brush", direction="x", resetOnNew=FALSE))),
-                plot_opts_row("annual"),
-                title="Annual observations", width=12, collapsible=TRUE
-              )),
+                plot_opts_row("annual")
+              ),
               fluidRow(
-                column(6, uiOutput("parsBoxes")),
-                column(6, div(id="denbox", h4("Period density"),
+                column(5, h4("Linear regression output"), uiOutput("parsBoxes")),
+                column(7, div(id="denbox", h4("Period density"),
                   withSpinner(plotOutput("dist_plot", height="auto")),
                   plot_opts_row("period", FALSE)))
               )
