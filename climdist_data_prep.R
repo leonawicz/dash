@@ -3,7 +3,11 @@ library(purrr)
 
 period <- c(1860, 2099)
 variables <- c("Precipitation" = "pr", "Mean temperature" = "tas", "Min Temperature" = "tasmin", "Max temperature" = "tasmax")
-seasons <- list("Annual" = "annual", Seasons = list("Winter" = "winter", "Spring" = "spring", "Summer" = "summer", "Autumn" = "autumn"))
+molist <- as.list(month.abb)
+names(molist) <- month.name
+seasons <- list("Annual" = "annual", 
+                Seasons = list("Winter" = "winter", "Spring" = "spring", "Summer" = "summer", "Autumn" = "autumn"),
+                Months = molist)
 stats <- c("Mean")
 mapsets <- c(
   "Alaska/western Canada" = "AK-CAN",
@@ -60,7 +64,7 @@ library(rgdal)
 library(rgeos)
 library(maptools)
 shpDir <- "LowResFlatShapefiles"
-proj4 <- "+proj = longlat +ellps = WGS84 +datum = WGS84 +no_defs"
+proj4 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 
 # Full domain (Alaska / western Canada)
 akcan1_shp <- readOGR(file.path(shpDir, "Political/AK_CAN_PRISM_Extent.shp"), verbose = FALSE) %>% spTransform(proj4)
