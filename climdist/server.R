@@ -21,6 +21,13 @@ shinyServer(function(input, output, session) {
   mapset_reg_id <- reactive("NAME") #reactive({ mapset_colIDs[match(input$mapset, mapsets)] })
   mapset_labs <- reactive({ names(mapsets)[match(input$mapset, mapsets)] })
   
+  sea <- reactive({
+    x <- input$seasons
+    idx <- which(x %in% c(paste0(0, 1:9), 10:12))
+    if(length(idx)) x[idx] <- month.abb[as.numeric(x[idx])]
+    x
+  })
+  
   output$mapset_regions <- renderUI({
     reg <- rv$regions
     mult <- FALSE
@@ -55,7 +62,7 @@ shinyServer(function(input, output, session) {
   cru_selected <- reactive({ cru %in% input$gcms })
   i <- reactive({
     list(rcps=input$rcps, gcms=input$gcms, 
-      reg=regions_selected(), seasons=input$seasons, yrs=input$yrs,
+      reg=regions_selected(), seasons=sea(), yrs=input$yrs,
       reg.names=names(rv$regions)[match(input$regions, rv$regions)]) 
   })
   
@@ -65,14 +72,17 @@ shinyServer(function(input, output, session) {
     rcps_string <- tolower(gsub("[ \\.]", "", input$rcps))
     models <- input$gcms
     if(cru_selected() && input$yrs[1] <= cru.max.yr) models <- c(cruId, models[models != cru])
-    files <- expand.grid(input$variable, rcps_string, models[models != cruId], input$seasons, stringsAsFactors=FALSE)
+    files <- expand.grid(input$variable, rcps_string, models[models != cruId], sea(), stringsAsFactors=FALSE)
     if(cru_selected() & input$yrs[1] >= rcp.min.yr){
-      files <- rbind(expand.grid(input$variable, "historical", cruId, input$seasons, stringsAsFactors=FALSE), files)
+      files <- rbind(expand.grid(input$variable, "historical", cruId, sea(), stringsAsFactors=FALSE), files)
     } else if(input$yrs[1] < rcp.min.yr){ 
-      files <- rbind(expand.grid(input$variable, "historical", models, input$seasons, stringsAsFactors=FALSE), files)
+      files <- rbind(expand.grid(input$variable, "historical", models, sea(), stringsAsFactors=FALSE), files)
     }
     files <- files[!(files[, 3]==cruId & files[, 1] %in% c("tasmin", "tasmax")),] # temporarily missing files
-    cbind(files, Var5=paste0(files[,1], "_", files[,2], "_", files[,3], "_", files[,4], ".rds"))
+    x <- files[, 4]
+    idx <- which(x %in% month.abb)
+    if(length(idx)) x[idx] <- c(paste0(0, 1:9), 10:12)[match(x[idx], month.abb)]
+    cbind(files, Var5=paste0(files[, 1], "_", files[, 2], "_", files[, 3], "_", x, ".rds"))
   })
   
   # data frames
