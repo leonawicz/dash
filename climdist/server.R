@@ -39,7 +39,7 @@ shinyServer(function(input, output, session) {
   
   # Initialize map and add polygons
   mapSelect <- reactive({
-    xyz <- split(c(rep(c(-135, 61, 3), 2), rep(c(-155, 65, 4), 8)), rep(1:10, each=3))
+    xyz <- split(c(rep(c(-135, 61, 3), 2), rep(c(-155, 65, 4), 4), c(-145, 65, 3), rep(c(-155, 65, 4), 3)), rep(1:10, each=3))
     names(xyz) <- mapsets
     build_mapset(rv$shp, rv$regions, mapset_reg_id(), input$mapset, mapsets, default_mapset, "Alaska/western Canada", locs2, xyz)
   })
