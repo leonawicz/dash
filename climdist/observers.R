@@ -79,6 +79,8 @@ observe({
     reg <- rv$regions
     readData <- if(src=="local") readRDS else s3readRDS
     readData_iterate <- function(i){
+      data_group <- if(files[i, 4] %in% month.abb) "monthly" else "seasonal"
+      path <- gsub("__dataset__", data_group, path)
       readData(file.path(path, files[i, 5])) %>%
       mutate(RCP=factor(switch(files[i, 2], 
                                historical="Historical", 
@@ -88,7 +90,7 @@ observe({
              Model=factor(ifelse(files[i, 3]=="ts40", cru, files[i, 3]), levels=c(cru, gcms)),
              Region=factor(basename(path), levels=reg),
              Var=factor(files[i, 1], levels=variables),
-             Season=factor(files[i, 4], levels=as.character(unlist(seasons)))) %>%
+             Season=factor(files[i, 4], levels = as.character(unlist(seasons)))) %>%
       select(RCP, Model, Region, Var, Season, Year, Val, Prob)
     }
     progress <- shiny::Progress$new()
@@ -110,7 +112,7 @@ observe({
     rv$load_new_files <- TRUE
   }
   if(rv$load_new_files){
-    region_paths <- file.path(dataloc, "clim_2km_seasonal", input$mapset, regions_selected())
+    region_paths <- file.path(dataloc, "__dataset__", input$mapset, regions_selected())
     rv$d <- map(region_paths, ~load_files(.x, files(), data_source)) %>% bind_rows  %>% droplevels
     rv$current_files <- files()
     rv$current_regions <- regions_selected()
