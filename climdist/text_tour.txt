@@ -1,7 +1,9 @@
-Welcome to the SNAP climate data exploration tool for downscaled preciptiation and temperature.
-This R Shiny app offers 3.7 million spatial probability distributions among 82 unique geographic subdomains
-across more than 45,000 high resolution, spatially explicit climate maps containing a total of approximately 200 billion pixels,
-all without the need to reduce spatial climate distributions to select, precomputed statistics.
+Welcome to the SNAP climate data exploration tool for downscaled precipitation and temperature.
+This R Shiny app offers over 46 million spatio-temporal probability distributions among 86 unique geographic subdomains.
+This does not include aggregated distributions that you may produce when using the app.
+Spatial climate distributions across more than 45,000 high resolution, spatially explicit climate maps 
+containing a total of approximately 200 billion pixels are made quickly and easily accessible without the need to reduce 
+these distributions to a handful of precomputed statistics.
 The app exposes hundreds of gigabytes of data to the user and any slice of the data can be rapidly accessed.
 After the tour, for additional information, see the Information tab in the sidebar.
 
@@ -21,7 +23,7 @@ Four climate variables are available: seasonal total precipitation and seasonal
 means of minimum, mean, and maximum daily temperatures.
 
 Representative Concentration Pathways (RCPs) refer to different levels of
-projected future greenhouse gas emmissions based on different assumptions about population growth,
+projected future greenhouse gas emissions based on different assumptions about population growth,
 economic development and energy usage. Three RCPs are available for each climate model.
 See the Information tab for more details about RCPs.
 
@@ -49,7 +51,7 @@ Statistics are derived from the full spatial climate probability densities for t
 These statistics are based on annual data over the full selected time period.
 
 The annual time series shows annual mean climate values with a fitted regression line and confidence band by default.
-Plot settings can be changed to show the distribution of individual annaul observations in place of or in addition to mean values.
+Plot settings can be changed to show the distribution of individual annual observations in place of or in addition to mean values.
 Brushing the time series with your mouse highlights a range of years.
 The summary stat boxes above, regression model output at the bottom left, and the density plot at the bottom right
 all automatically update to reflect your selection.
@@ -72,6 +74,6 @@ Percent change only applies to precipitation.
 The next two show which pairs of consecutive decades account for the smallest and largest decade-to-decade change.
 The last two show which decades have the smallest and largest climate values on average.
 
-Decadal boxplots show the distribution of climate values in space and time per decade.
-By default, observations are shown as an overlay. The combination of boxplots and unique observations can be changed in the plot settings.
+Decadal box plots show the distribution of climate values in space and time per decade.
+By default, observations are shown as an overlay. The combination of box plots and unique observations can be changed in the plot settings.
 Like the annual time series, brushing the plot with your mouse updates the statistical summary.
