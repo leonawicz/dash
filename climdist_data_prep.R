@@ -24,8 +24,9 @@ rcp <- c("Historical", "RCP 4.5", "RCP 6.0", "RCP 8.5")
 rcps <- c("4.5" = rcp[2], "6.0" = rcp[3], "8.5" = rcp[4])
 gcms <- c("GFDL-CM3", "GISS-E2-R", "IPSL-CM5A-LR", "MRI-CGCM3", "NCAR-CCSM4")
 cru <- "CRU 4.0"
+default_clim <- c(1980, 2009)
 
-dataDir <- "clim_2km_seasonal"
+dataDir <- "seasonal"
 grpDirs <- list.files(dataDir)
 grpDirs <- grpDirs[match(mapsets, grpDirs)]
 locs <- map(grpDirs, ~list.files(file.path(dataDir, .x)))
@@ -123,7 +124,7 @@ intro_css_args <- list(
              'background-size' = '70% 700px'), 
   rgba = c(60, 141, 188, 1), hover.rgba = c(60, 141, 188, 1)) #, radius = '0px') #### inactive radius override
    
-objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 
+objs <- c('shp.list', 'locs_areas', 'locs', 'locs2', 'mapsets', 'rcps', 'gcms', 'cru', 'default_clim',
           'period', 'variables', 'seasons', 'stats', 'mapset_colIDs',
           'default_mapset', 'regions_list_default', 'regions_selected_default', 'cru.max.yr', 'rcp.min.yr',
           'limit.sample', 'action_btn_style', 'axis_scales', 'req_inputs', 'clropts', 'fctopts', 

@@ -9,7 +9,8 @@ app_intro <- list(
 shinyServer(function(input, output, session) {
 
   # reactive values
-  rv <- reactiveValues(d=NULL, d_ts_b=NULL, d_dec_b=NULL, current_files=NULL, current_regions=NULL, 
+  rv <- reactiveValues(d=NULL, d_ts_b=NULL, d_dec_b=NULL, d_clim=NULL, climatology=default_clim,
+                       current_files=NULL, current_regions=NULL, 
                        load_new_files=TRUE, cru=NULL, regions=regions_list_default, 
                        shp=shp.list[[default_mapset]], go=1, intro_toast_done=FALSE)
   rv_plots <- reactiveValues(ts_x=NULL, ts_y=NULL, ts_brush=NULL, dec_x=NULL, dec_y=NULL, dec_brush=NULL)
@@ -70,14 +71,14 @@ shinyServer(function(input, output, session) {
   files <- reactive({
     cruId <- "ts40"
     rcps_string <- tolower(gsub("[ \\.]", "", input$rcps))
-    models <- input$gcms
-    if(cru_selected() && input$yrs[1] <= cru.max.yr) models <- c(cruId, models[models != cru])
-    files <- expand.grid(input$variable, rcps_string, models[models != cruId], sea(), stringsAsFactors=FALSE)
-    if(cru_selected() & input$yrs[1] >= rcp.min.yr){
+    models <- input$gcms[input$gcms != cru]
+    y1 <- input$yrs[1]
+    use_cru <- (cru_selected() & y1 <= cru.max.yr) | input$show_deltas | rv$go == 1
+    files <- expand.grid(input$variable, rcps_string, models, sea(), stringsAsFactors=FALSE)
+    if(use_cru)
       files <- rbind(expand.grid(input$variable, "historical", cruId, sea(), stringsAsFactors=FALSE), files)
-    } else if(input$yrs[1] < rcp.min.yr){ 
-      files <- rbind(expand.grid(input$variable, "historical", models, sea(), stringsAsFactors=FALSE), files)
-    }
+    if(input$yrs[1] < rcp.min.yr) 
+        files <- rbind(expand.grid(input$variable, "historical", models, sea(), stringsAsFactors=FALSE), files)
     files <- files[!(files[, 3]==cruId & files[, 1] %in% c("tasmin", "tasmax")),] # temporarily missing files
     x <- files[, 4]
     idx <- which(x %in% month.abb)
@@ -88,7 +89,7 @@ shinyServer(function(input, output, session) {
   # data frames
   noData <- reactive({ any(sapply(i(), is.null)) || is.null(rv$d) })
   
-  d_sub <- reactive({
+  d_sub0 <- reactive({
     rv$go
     isolate({
       if(is.null(rv$d)) return()
@@ -96,22 +97,62 @@ shinyServer(function(input, output, session) {
       if(noData()){
         x <- slice(rv$d, 0)
       } else {
-        getSubset <- function(x) filter(x, 
-          RCP %in% c("Historical", i()[[1]]) & Model %in% i()[[2]] &
-            Region %in% i()[[3]] & Season %in% i()[[4]] &
-            Year >= i()[[5]][1] & Year <= i()[[5]][2]) %>%
-          select_(.dots=dots)
-        x <- getSubset(rv$d)
+        x <- filter(rv$d, RCP %in% c("Historical", i()[[1]]) & Model %in% unique(c(cru, i()[[2]])) &
+          Region %in% i()[[3]] & Season %in% i()[[4]]) %>% select_(.dots=dots)
       }
       x %>% droplevels
     })
   })
   
-  d_prepped <- reactive({
+  d_sub <- reactive({
+    if(is.null(d_sub0())) return()
+    filter(d_sub0(), Model %in% i()[[2]] & Year >= i()[[5]][1] & Year <= i()[[5]][2]) %>% droplevels
+  })
+  
+  observe({
+    rv$go
+    input$show_deltas
+    x <- input$climatology
+    isolate({
+      req(d_sub0())
+      if(input$show_deltas){
+        if(!identical(x, rv$climatology)){
+          rv$climatology <- x
+          rv$d_clim <- NULL
+        }
+        if(!cru %in% d_sub0()$Model){
+          if(is.null(rv$d_clim)) rv$go <- rv$go + 1
+        } else {
+          if(is.null(rv$d_clim)){         
+            x <- filter(d_sub0(), Model == cru & Year >= x[1] & Year <= x[2]) %>%
+              dist_data(input$variable, input$marginalize, seed=1, NULL, x, rcp.min.yr, cru.max.yr, i()[[2]], cru) %>%
+              group_by(Region, Season) %>% summarise(baseline = mean(Val))
+            rv$d_clim <- x
+          }
+        }
+      }
+    })
+  })
+  
+  d_prepped0 <- reactive({
     rv$go
     isolate({
       req(d_sub())
       dist_data(d_sub(), input$variable, input$marginalize, seed=1, NULL, input$yrs, rcp.min.yr, cru.max.yr, i()[[2]], cru)
+    })
+  })
+  
+  d_prepped <- reactive({
+    rv$go
+    rv$d_clim
+    if(!input$show_deltas) return(d_prepped0())
+    isolate({
+      if(!is.null(rv$d_clim)){
+        left_join(d_prepped0(), rv$d_clim, by = c("Region", "Season")) %>% 
+          mutate(Val = Val - baseline) %>% select(-baseline)
+      } else {
+        d_prepped0()
+      }
     })
   })
   

@@ -42,7 +42,7 @@ function(request){
     dashboardBody(
       tabItems(
         tabItem(tabName="climate",
-          bsModal("settings", "Additional plot settings", "settings_btn", size="large",
+          bsModal("settings", "Additional settings", "settings_btn", size="large",
             fluidRow(
               column(4,
                 h4("Annual time series"),
@@ -65,8 +65,12 @@ function(request){
             hr(),
             h4("General options"),
             fluidRow(
-              column(3, selectInput("metric", "Units", c("Metric", "US"), width="100%")),
-              column(3, selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%"))
+              column(4, selectInput("metric", "Units", c("Metric", "US"), width="100%")),
+              column(4, selectInput("facet_scales", "Axis scales", choices=axis_scales, width="100%"))
+            ),
+            fluidRow(
+              column(8, sliderInput("climatology", "Climatology period", 1950, 2009, c(1980, 2009), 1, sep="", width="100%")),
+              column(4, checkboxInput("show_deltas", "Display delta change", FALSE))
             )
           ),
           div(id="controls", fluidRow(box(

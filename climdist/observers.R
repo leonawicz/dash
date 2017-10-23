@@ -55,6 +55,7 @@ observe({
 # Observe button click for loading data
 observeEvent(input$go_btn, {
   rv$go <- rv$go + 1
+  rv$d_clim <- NULL
 })
 
 observe({
