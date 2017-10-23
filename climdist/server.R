@@ -148,8 +148,9 @@ shinyServer(function(input, output, session) {
     if(!input$show_deltas) return(d_prepped0())
     isolate({
       if(!is.null(rv$d_clim)){
-        left_join(d_prepped0(), rv$d_clim, by = c("Region", "Season")) %>% 
-          mutate(Val = Val - baseline) %>% select(-baseline)
+        x <- left_join(d_prepped0(), rv$d_clim, by = c("Region", "Season"))
+        x <- if(input$variable == "pr") mutate(x, Val = Val / baseline) else mutate(x, Val = Val - baseline)
+        select(x, -baseline)
       } else {
         d_prepped0()
       }
