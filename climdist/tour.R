@@ -3,7 +3,7 @@ tour.pos <- c(rep("bottom", 13), "top", rep("bottom", 3), rep("top", 2), "bottom
 tour.element <- c(
   "#controls", "#mapset + .selectize-control", "#Map", "#regions + .selectize-control",
   "#variable + .selectize-control",
-  "#rcps + .selectize-control", "#gcms + .selectize-control", "#seasons + .selectize-control", ".js-irs-3", 
+  "#rcps + .selectize-control", "#gcms + .selectize-control", "#seasons + .selectize-control", ".js-irs-4", 
   "#marginalize + .selectize-control",
   "#go_btn", "#settings_btn",
   "#statBoxes1", "#ts_plot", "#clrby_annual + .selectize-control", "#fctby_annual + .selectize-control", 
