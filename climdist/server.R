@@ -167,14 +167,14 @@ shinyServer(function(input, output, session) {
     d()
     x <- rv_plots$ts_x
     b <- input$ts_plot_brush
-    isolate(brushed_data(d(), x, b))
+    isolate(brushed_ts(d(), x, b))
   })
   
   d_dec_brushed <- reactive({
     d()
     x <- rv_plots$dec_x
     b <- input$dec_plot_brush
-    isolate(brushed_data(d(), x, b, "decadal"))
+    isolate(brushed_ts(d(), x, b, "decadal"))
   })
   
   # plot-related reactive objects
