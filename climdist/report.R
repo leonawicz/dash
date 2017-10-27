@@ -1,9 +1,9 @@
 uni <- reactive({
   v <- input$variable
   if(metric()){
-    x <- if(v=="pr") "mm" else "degrees Celcius"
+    x <- if(v == "pr") "mm" else "degrees Celcius"
   } else {
-    x <- if(v=="pr") "in" else "degrees fahrenheit"
+    x <- if(v == "pr") "in" else "degrees fahrenheit"
   }
   x
 })
@@ -22,47 +22,49 @@ annual_plot_content <- reactive({
 decadal_plot_content <- reactive({
   x <- c("Box plot", "Strip chart", "Overlay")
   y <- input$bptype
-  if(y==x[1]) return("box plots")
-  if(y==x[2]) return("strip chart")
+  if(y == x[1]) return("box plots")
+  if(y == x[2]) return("strip chart")
   "box plots with spatial samples overlay"
 })
 
 report_doc_type <- reactive({
-  switch(input$report_format, pdf=pdf_document(), html=html_document())
+  switch(input$report_format, pdf = pdf_document(), html = html_document())
 })
 
 output$report <- downloadHandler(
-  filename=function() { paste0("snap_downscaled_climate_custom_report.", input$report_format) },
-  content=function(file){
+  filename = function() { paste0("snap_downscaled_climate_custom_report.", input$report_format) },
+  content = function(file){
     tempReport <- file.path(tempdir(), "report.Rmd")
-    file.copy("report.Rmd", tempReport, overwrite=TRUE)
+    file.copy("report.Rmd", tempReport, overwrite = TRUE)
     params <- list(
-      wd=getwd(),
-      years=yrs(),
-      n=length(yrs()),
-      variable=input$variable,
-      x=d(),
-      units=uni(),
-      regions=i()[[3]],
-      regions.names=i()[[6]],
-      seasons=input$seasons,
-      plot_ts=plot_ts(),
-      plot_den=plot_dist(),
-      plot_dec=plot_dec(),
-      cru=cru,
-      clrbyann=clrby_annual(),
-      fctbyann=fctby_annual(),
-      tablesann=report_stats_annual(),
-      clrbydec=clrby_decadal(),
-      fctbydec=fctby_decadal(),
-      tablesdec=report_stats_decadal(),
-      anncontent=annual_plot_content(),
-      annlm="lm" %in% input$fit_models,
-      deccontent=decadal_plot_content()
+      wd = getwd(),
+      years = yrs(),
+      n = length(yrs()),
+      variable = input$variable,
+      x = d(),
+      units = uni(),
+      regions = i()[[3]],
+      regions.names = i()[[6]],
+      seasons = input$seasons,
+      plot_ts = plot_ts(),
+      plot_den = plot_dist(),
+      plot_dec = plot_dec(),
+      cru = cru,
+      clrbyann = clrby_annual(),
+      fctbyann = fctby_annual(),
+      tablesann = report_stats_annual(),
+      clrbydec = clrby_decadal(),
+      fctbydec = fctby_decadal(),
+      tablesdec = report_stats_decadal(),
+      anncontent = annual_plot_content(),
+      annlm = "lm" %in% input$fit_models,
+      deccontent = decadal_plot_content(),
+      deltas = input$show_deltas,
+      clim = input$climatology
     )
-    rmarkdown::render(tempReport, output_file=file, 
-                      output_format=report_doc_type(), 
-                      params=params, envir=new.env(parent=globalenv())
+    rmarkdown::render(tempReport, output_file = file, 
+                      output_format = report_doc_type(), 
+                      params = params, envir = new.env(parent = globalenv())
     )
   }
 )
