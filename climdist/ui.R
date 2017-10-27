@@ -1,5 +1,10 @@
 library(shinycssloaders)
-req_inputs <- inputs_not_null(req_inputs)
+req_inputs <- paste(inputs_not_null(req_inputs), 
+                    "&& (input.gcms.length > 1 || (input.gcms.length == 1 && input.gcms[0] !== 'CRU 4.0') || 
+                      (input.gcms.length == 1 && input.gcms[0] == 'CRU 4.0' && 
+                        ((input.yrs[0] > 1900 && input.yrs[0] < 2016) || (input.yrs[1] > 1900 && input.yrs[1] < 2016) ||
+                          input.yrs[0] <= 1900 && input.yrs[1] >= 2016)
+                    ))")
 
 plot_opts_row <- function(id, clrfct=TRUE, dl="Download", w="100%"){
   x <- paste0(c("clrby_", "fctby_", "dlPlot_"), id)
