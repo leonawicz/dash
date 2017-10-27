@@ -390,7 +390,7 @@ This report was produced by SNAP's [Climate Analytics](https://uasnap.shinyapps.
 ```{r logos_pdf, eval=is_pdf, out.height="100pt", fig.pos="h!b"}
 library(snaputils)
 x <- snap_res()
-include_graphics("C:/github/dash/snap_fullcolor_400h.png")
+include_graphics(file.path(params$wd, "www/snap_fullcolor_400h.png"))
 include_graphics(file.path(x, "iarc.jpg"))
 include_graphics(file.path(x, "uaf.png"))
 ```
