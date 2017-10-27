@@ -1,0 +1,401 @@
+---
+title: "CMIP5 downscaled climate fact sheet"
+author: "Scenarios Network for Alaska and Arctic Planning"
+date: "`r format(Sys.Date(), format='%B %d, %Y')`"
+output: 
+  pdf_document:
+    fig_caption: yes
+urlcolor: blue
+params:
+  wd: NA
+  n: NA
+  years: NA
+  variable: NA
+  x: NA
+  units: NA
+  regions: NA
+  regions.names: NA
+  seasons: NA
+  plot_ts: NA
+  plot_den: NA
+  plot_dec: NA
+  cru: NA
+  clrbyann: NA
+  fctbyann: NA
+  tablesann: NA
+  clrbydec: NA
+  fctbydec: NA
+  tablesdec: NA
+  anncontent: NA
+  annlm: NA
+  deccontent: NA
+  deltas: NA
+  clim: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir=params$wd)
+knitr::opts_chunk$set(echo=FALSE, fig.width=12, fig.height=7, results="asis", fig.show='asis')
+# data, years, variables, units, regions, seasons
+x <- params$x
+n <- params$n
+yrs <- params$years
+var <- params$variable
+dec_lev <- levels(x$Decade)
+variable_clarifier <- if(var=="pr") "total" else "average daily"
+deltas <- params$deltas
+clim <- params$clim
+varname <- switch(var, tas="Mean temperature", tasmin="Minimum temperature", tasmax="Maximum temperature", pr="Precipitation")
+if(deltas) varname <- paste(varname, "anomalies")
+lvarname <- tolower(varname)
+uni <- params$units
+reg <- params$regions
+reg.names <- params$regions.names
+seasons <- params$seasons
+all_vars <- names(x)[!names(x) %in% c("Var", "Val")]
+```
+```{r setup_plots, include=FALSE}
+# prepared plots
+plot_ts <- params$plot_ts
+plot_den <- params$plot_den
+plot_dec <- params$plot_dec
+```
+
+```{r setup_models, include=FALSE}
+# GCMs, CRU, RCPs
+cru <- params$cru
+rcps <- levels(x$RCP)
+gcms <- levels(x$Model)
+has_cru <- cru %in% gcms
+if(has_cru) gcms <- gcms[gcms!=cru]
+cru.min.yr <- 1900
+cru.max.yr <- 2015
+if(yrs[1] > cru.max.yr || yrs[2] < cru.min.yr || !cru %in% x$Model) has_cru <- FALSE
+```
+
+```{r setup_clrfct, include=FALSE}
+# plot color and facet information
+clrbyann <- params$clrbyann
+fctbyann <- params$fctbyann
+clrann <- !is.null(clrbyann)
+fctann <- !is.null(fctbyann)
+clrbydec <- params$clrbydec
+fctbydec <- params$fctbydec
+clrdec <- !is.null(clrbydec)
+fctdec <- !is.null(fctbydec)
+```
+
+```{r setup_tables, include=FALSE}
+# data frames for printed tables
+tabsann <- params$tablesann
+tabsdec <- params$tablesdec
+if(var!="pr") tabsann$decadal[["Percent change"]] <- NULL
+if(var!="pr") tabsdec$decadal[["Percent change"]] <- NULL
+print(tabsann)
+print(tabsdec)
+nrow_tabs <- map(list(tabsann$annual, tabsdec$decadal), ~nrow(.x))
+rnd <- if(var=="pr") 0 else 1
+if(uni=="in") rnd <- 3
+```
+
+```{r setup_captions, include=FALSE}
+# figure caption text strings
+anncontent <- params$anncontent
+annlm <- params$annlm
+if(annlm){
+  lmcap <- "with regression model"
+  if(clrann) lmcap <- paste(lmcap, "for each", tolower(clrbyann))
+  if(!clrann & fctann) lmcap <- paste(lmcap, "for each", tolower(fctbyann))
+  if(clrann & fctann) lmcap <- paste(lmcap, "and", tolower(fctbyann))
+  lmcap <- paste0(lmcap, ".")
+} else lmcap <- "."
+
+deccontent <- params$deccontent
+```
+
+```{r setup_strings, include=FALSE}
+# other text strings
+text_regions <- pasteByLength(reg.names)
+text_seasons <- pasteByLength(seasons)
+text_rcps <- pasteByLength(rcps)
+text_rcps2 <- if(length(rcps)==1) "emissions scenario" else "emissions scenarios"
+text_gcms <- pasteByLength(gcms)
+text_num_gcms <- switch(length(gcms), '1'="one", '2'="two", '3'="three", '4'="four", '5'="five")
+text_models <- if(length(gcms) > 1) "models" else "model"
+```
+
+```{r setup_pooled_data, include=FALSE}
+pooled_vars <- c()
+pv <- setdiff(all_vars[!all_vars %in% c("Year", "Decade")], c(clrbyann, fctbyann)) # annual
+if(length(rcps)==1 | (length(rcps) == 2 & "Historical" %in% rcps)) pv <- pv[pv!="RCP"]
+if(length(gcms) + ifelse(has_cru, 1, 0) == 1) pv <- pv[pv!="Model"]
+if(length(pv)){
+  for(i in seq_along(pv)){
+    if(length(unique(x[[pv[i]]])) > 1){
+      pooled_vars <- c(pooled_vars, ifelse(pv[i]=="RCP", "RCPs", paste0(tolower(pv[i]), "s")))
+    }
+  }
+}
+pvann <- if(length(pooled_vars)) pooled_vars else NULL
+
+pooled_vars <- c()
+pv <- setdiff(all_vars[!all_vars %in% c("Year", "Decade")], c(clrbydec, fctbydec)) # decadal
+if(length(rcps)==1 | (length(rcps) == 2 & "Historical" %in% rcps)) pv <- pv[pv!="RCP"]
+if(length(gcms) + ifelse(has_cru, 1, 0) == 1) pv <- pv[pv!="Model"]
+if(length(pv)){
+  for(i in seq_along(pv)){
+    if(length(unique(x[[pv[i]]])) > 1){
+      pooled_vars <- c(pooled_vars, ifelse(pv[i]=="RCP", "RCPs", paste0(tolower(pv[i]), "s")))
+    }
+  }
+}
+pvdec <- if(length(pooled_vars)) pooled_vars else NULL
+
+pooled_vars <- unique(c(pvann, pvdec))
+pv <- if(length(pooled_vars)) pasteByLength(pooled_vars) else NULL
+if(has_cru & (!"Model" %in% c(clrbyann, fctbyann) | !"Model" %in% c(clrbydec, fctbydec))){
+  pv_cru <- paste("Note also that SNAP's 2-km downscaled version of the", cru, 
+    "observation-based historical data set is included in these outputs
+    but has been pooled with model output in the application session. 
+    Please reconsider your data selections and generate a new report.")
+} else pv_cru <- NULL
+```
+
+# Overview
+
+Note that the text and values shown here are placeholders for the final reactive reporting template
+as it is being developed.
+The current content is not intended to be meaningful or accurate...
+
+```{r tab_overview_data, include=FALSE}
+#x_dec <- group_by_(x, .dots=all_vars[all_vars != "Year"]) %>% 
+#  summarise(Mean=mean(Val), SD=sd(Val), Median=median(Val), `95th Percentile`=quantile(Val, prob=0.95))
+x_decregsea <- filter(x, Decade %in% dec_lev[c(1, length(dec_lev))]) %>% group_by(Region, Season, Decade) %>% 
+  summarise(Mean=mean(Val), SD=sd(Val), Median=median(Val), `95th Percentile`=quantile(Val, prob=0.95))
+x_regsea <- group_by(x, Region, Season) %>% 
+  summarise(Mean=mean(Val), SD=sd(Val), Median=median(Val), `95th Percentile`=quantile(Val, prob=0.95))
+x_dec_basic <- group_by(x, Decade) %>% 
+  summarise(Mean=mean(Val), SD=sd(Val), Median=median(Val), `95th Percentile`=quantile(Val, prob=0.95))
+#x_all <- group_by_(x, .dots=all_vars[!all_vars %in% c("Decade", "Year")]) %>% 
+#  summarise(Mean=mean(Val), SD=sd(Val), Median=median(Val), `95th Percentile`=quantile(Val, prob=0.95))
+#x_one <- filter(x, Year==yrs[n]) %>% group_by_(.dots=all_vars[!all_vars %in% c("Decade")]) %>% 
+#  summarise(Mean=mean(Val), SD=sd(Val), Median=median(Val), `95th Percentile`=quantile(Val, prob=0.95))
+x_oneregsea <- filter(x, Year==yrs[n]) %>% group_by(Region, Season, Year) %>% 
+  summarise(Mean=mean(Val), SD=sd(Val), Median=median(Val), `95th Percentile`=quantile(Val, prob=0.95))
+```
+
+```{r setup_direction, include=FALSE}
+# general direction of change
+first10 <- round(x_dec_basic$Mean[1], rnd)
+last10 <- round(x_dec_basic$Mean[nrow(x_dec_basic)], rnd)
+diff10 <- last10-first10
+dir <- "decrease"
+if(diff10 > 0) dir <- "increase" else if(diff10==0) dir <- "remain stable"
+proj <- if(tail(yrs, 1) > as.numeric(substr(Sys.Date(), 1, 4))) "is projected to " else ""
+if(proj==""){
+  if(dir=="remain stable") proj <- "remained stable" else proj <- paste0(dir, "d")
+} else proj <- paste0(proj, dir)
+dir2 <- if(dir=="decrease") "reduction" else "gain"
+```
+
+```{r intro_text}
+show_text <- if(first10==0) FALSE else TRUE
+ctext1 <- paste0(paste(varname, "climate model outputs are shown for the period", yrs[1], "through", 
+                       paste0(yrs[n], ". Across all the data, in this time the"), 
+                       text_seasons, lvarname, "per year", proj, "from an average of", first10, uni,
+                       "across", text_regions, "during the first ten years to an average of", last10, uni, 
+                       "per year during the final ten years of the period."))
+ctext3 <- paste0(paste("These results are based on the", text_rcps, text_rcps2, "and", text_num_gcms, "climate", 
+  text_models), ": ", text_gcms, ".")
+if(has_cru) ctext3 <- paste0(ctext3, paste(" The", cru, 
+  "observation-based historical data set has also been included for comparison
+  with GCMs during their period of overlap,", max(cru.min.yr, yrs[1]), "-", min(cru.max.yr, yrs[n])), ".")
+if(deltas) ctext3 <- paste0(ctext3, paste(" Note that all values reported are anomalies, or delta change from a historical baseline average, not raw values. The period used for the baseline is the", clim[1], "-", clim[2], cru, "climatology. This is unique to each geographic region and intra-annual period so that anomalies can be compared, for example, between locations as well as between months or seasons."))
+```
+
+```{r ctext_intro_1, eval=show_text}
+ctext2 <- paste0(paste("This change of", abs(diff10), uni, "across", text_regions, "represents a", 
+       round(100*abs(1-last10/first10)), "percent", dir2, "in" ,lvarname), ".")
+cat(paste(ctext1, ctext2, ctext3))
+```
+
+```{r ctext_intro_0, eval=!show_text}
+cat(paste(ctext1, ctext3))
+```
+
+```{r pooling_caveat}
+show_text <- if(length(pv) | length(pv_cru)) TRUE else FALSE
+ctext1 <- paste(c(paste0("Note that any categorical variables with multiple levels selected for inclusion in this report
+  that are not broken out in plots by color or faceting have their associated observations pooled and averaged.
+  In this report, this includes ", pv,  "."), pv_cru), collpase=" ")
+```
+
+```{r ctext_pooling_1, eval=show_text}
+cat(ctext1)
+```
+
+## Full period and decadal summary tables
+
+Table 1 shows an overview of the data included in this report. The mean and standard deviation as well as
+the median and the 95th percentile for regional `r text_seasons` `r variable_clarifier` `r lvarname` are shown 
+averaged over the period `r yrs[1]` - `r yrs[n]`.
+
+```{r tab_overview_allyears}
+kable(x_regsea, caption=paste(yrs[1], "-", yrs[n], "statistical summary of", ifelse(nrow(x_regsea)==1, "the", ""), 
+                           "spatial", varname, ifelse(nrow(x_regsea)==1, "distribution.", "distributions.")),
+      digits=rnd)
+```
+
+### Spatially explcit data
+
+The SNAP Analytics application used to produce this report ([Climate Analytics](https://uasnap.shinyapps.io/climdist/)) works with spatially explicit climate data sets.
+For this reason, spatial probability distributions of `r lvarname` and the statistics used to summarize them
+are available for analysis even for single time slices of one year. 
+As an example, Table 2 below shows the same summary statistics as Table 1 for just the year `r yrs[n]`.
+In this case, there is no averaging over time and the distributional
+information pertains strictly to estimated probability densities across `r text_regions`.
+
+```{r tab_overview_oneyear}
+kable(x_oneregsea, caption=paste(yrs[n], "spatial", varname, "statistical summary."), digits=rnd)
+```
+
+Table 3 shows a similar overview of the data like shown in Table 1 but disaggregated by decade.
+The `r dec_lev[1]` and `r dec_lev[length(dec_lev)]` are selected for brevity.
+
+```{r tab_overview_decades}
+kable(x_decregsea, caption=paste(yrs[1], "-", yrs[n], "statistical summary of", ifelse(nrow(x_decregsea)==1, "the", ""), 
+                           "spatial", varname, ifelse(nrow(x_decregsea)==1, "distribution.", "distributions.")),
+      digits=rnd)
+```
+
+## Aggregated data
+
+Focusing on an fully aggregated view of the data, Table 4 and Table 5 show statistical results based on
+annual and decadal resolution climate outputs, respectively.
+The statistics in Table 4 based on annual observations pertain to the entire time period whereas
+Table 5 for shows some statistics summarizing change over the entire period from the `r dec_lev[1]` through
+the `r dec_lev[length(dec_lev)]` and others that focus on other points of inter-decadal change.
+
+While all data and results in this report are generated by SNAP's automated analytics,
+these results are further tailored to the data analyzed by the [Climate Analytics](https://uasnap.shinyapps.io/climdist/) app
+based specifically on user selections and graphing preferences during an interactive online session.
+See the plots further below, which correspond to the same choices of grouping variables as found
+in the Table 4 and Table 5 entries (e.g., coloring and faceting of plots by categorical variables, if applicable).
+
+```{r tab_ann}
+kable(tabsann$annual, caption=paste(
+  "Statistical summary of", ifelse(nrow_tabs[[1]]==1, "the", ""), 
+  yrs[1], "-", yrs[n], "spatial", lvarname, ifelse(nrow_tabs[[1]]==1, "distribution.", "distributions.")),
+  digits=rnd)
+```
+
+```{r tab_dec}
+kable(tabsdec$decadal, caption=paste("Summary of decadal change for the same period. 
+                                   Statistics are based on spatial means. See Figure 3 for distributional summaries."),
+      digits=rnd)
+```
+
+# Plots
+
+```{r clr_or_fct}
+show_text <- if(clrann | fctann | clrdec | fctdec) TRUE else FALSE
+ctext1a <- paste("Plots below provide insight into the", lvarname, "climate model output across time and space.")
+```
+
+```{r ctext1, eval=show_text, include=FALSE}
+anngrp <- c(clrbyann, fctbyann)
+decgrp <- c(clrbydec, fctbydec)
+if(identical(anngrp, decgrp)){
+  ctext1b <- paste0("Each plot is broken out by ", paste(c(clrbyann, fctbyann), collapse=" and "))
+} else if(is.null(anngrp)){
+  ctext1b <- paste0("The decadal series plot is broken out by ", paste(c(clrbydec, fctbydec), collapse=" and "))
+} else if(is.null(decgrp)){
+  ctext1b <- paste0("The annual series and period density plots are broken out by ", paste(c(clrbyann, fctbyann), collapse=" and "))
+} else {
+  ctext1b <- paste0("The annual series and period density plots are broken out by ", paste(c(clrbyann, fctbyann), collapse=" and "),
+         paste0(" and the decadal series plot is broken out by ", paste(c(clrbydec, fctbydec), collapse=" and ")))
+}
+ctext1b <- paste0(ctext1b, " like the results presented in Table 4 and Table 5.")
+cat(paste(ctext1a, ctext1b))
+```
+
+```{r ctext0, eval=!show_text}
+cat(ctext1a)
+```
+
+## Annual time series
+
+The time series plot in Figure 1 shows annual `r anncontent` for the period `r yrs[1]` - `r yrs[n]`.
+
+```{r plot_ts, fig.cap=paste("Annual", lvarname, anncontent, lmcap)}
+plot_ts
+```
+
+## Full period probability density
+
+```{r plots_density_text}
+multicurve <- clrann && length(unique(x[[clrbyann]])) > 1
+plot_density_text <- paste0(paste("  \n\nPooling data through time as well as space in Figure 2,", 
+  paste0(ifelse(multicurve, "", "a "), text_seasons),
+  lvarname, "probability density", ifelse(multicurve, "curves are", "curve is"), "shown for", 
+  text_regions, "from", yrs[1], "-", yrs[n]), ".  \n\n")
+```
+
+```{r plot_den, fig.cap=paste(varname, "spatial-temporal distributions.")}
+cat(plot_density_text)
+plot_den
+```
+
+## Decadal time series
+
+```{r plots_decadal_text}
+plot_decadal_text <- paste0(paste("  \n\nThe decadal series plot in Figure 3 shows distributional information for", 
+  text_seasons, lvarname, 
+  "across both the individual years within each decade and the spatially explcit downscaled outputs spread across",
+  text_regions), ".  \n\n")
+```
+
+```{r plot_dec, fig.cap=paste0(paste("Decadal", lvarname, deccontent), ".")}
+cat(plot_decadal_text)
+plot_dec
+```
+
+```{r is_pdf}
+is_pdf <- opts_knit$get("rmarkdown.pandoc.to")=="latex"
+```
+
+```{r final_page, eval=is_pdf}
+cat('\\newpage')
+```
+
+# About SNAP Analytics
+
+This report is dynamically generated by the SNAP Analytics platform,
+a framework for allowing scientists, analysts, researchers and the public to interact seamlessly with
+large data sets online in real-time in order to drill down to the precise data of interest,
+explore scenarios, run simulations, fit statistical models and generate results, tables
+and graphs in the browser for their customized analyses.
+
+The framework is built upon the R programming language and the R Shiny framework for web applications.
+The SNAP Analytics platform consists of a suite of web applications for data analysis.
+Among the many features offered is the ability to download dynamically generated reports like this one
+on demand from a live online user session. 
+This report was produced by SNAP's [Climate Analytics](https://uasnap.shinyapps.io/climdist/) app.
+
+[Reporting template under development]
+
+```{r logos_pdf, eval=is_pdf, out.height="100pt", fig.pos="h!b"}
+wd <- params$wd
+include_graphics(file.path(wd, "www/snap_fullcolor_400h.png"))
+include_graphics(file.path(wd, "www/iarc_375.jpg"))
+include_graphics(file.path(wd, "www/UAFLogo_A_286.png"))
+```
+
+```{r logos_html, eval=!is_pdf, out.height="100pt", fig.pos="h!b"}
+wd <- params$wd
+close_tag <- "' style='float:right;height:170px;margin-bottom:20px;' >"
+cat(paste0("<br/><img src='", file.path(wd, "www/UAFLogo_A_286.png"), close_tag, "\n",
+      "<img src='", file.path(wd, "www/iarc_375.jpg"), close_tag, "\n",
+      "<img src='", file.path(wd, "www/snap_fullcolor_400h.png"), close_tag))
+```
+
