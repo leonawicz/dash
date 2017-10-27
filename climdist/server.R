@@ -124,7 +124,7 @@ shinyServer(function(input, output, session) {
           if(is.null(rv$d_clim)) rv$go <- rv$go + 1
         } else {
           if(is.null(rv$d_clim)){
-            x <- filter(d_sub0(), Model == cru & Year >= x[1] & Year <= x[2])
+            x <- filter(d_sub0(), Model == cru & Year >= x[1] & Year <= x[2]) %>%
               dist_data(input$variable, input$marginalize, seed=1, NULL, x, rcp.min.yr, cru.max.yr, i()[[2]], cru,
                         baseline_only = TRUE) %>%
               group_by(Region, Season) %>% summarise(baseline = mean(Val))
