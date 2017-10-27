@@ -1,5 +1,5 @@
 app_intro_title <- "Explore and analyze spatial climate distributions"
-app_intro_logo <- "snap_white.svg"
+app_intro_logo <- "res/snap_white.svg"
 app_intro_message <- "
 <p style='text-align:justify;'>Welcome to SNAP's Climate Analytics app. To get started, a default data set is loaded when you visit this app.
 Press 'Build distributions' in the center of the page to reload after updating data selections.

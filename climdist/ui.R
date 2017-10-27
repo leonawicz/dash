@@ -1,4 +1,5 @@
 library(shinycssloaders)
+addResourcePath("res", snap_res())
 req_inputs <- paste(inputs_not_null(req_inputs), 
                     "&& (input.gcms.length > 1 || (input.gcms.length == 1 && input.gcms[0] !== 'CRU 4.0') || 
                       (input.gcms.length == 1 && input.gcms[0] == 'CRU 4.0' && 
@@ -25,7 +26,7 @@ function(request){
       title="Climate Explorer",
       tags$li(class="dropdown",
         tags$a(href="http://snap.uaf.edu", target="_blank",
-          tags$img(src="SNAP_acronym_100px.png", width="100%", alt="SNAP"), style="padding: 10px; margin: 0px;"))
+          tags$img(src="res/snap_acronym_white.png", width="100%", height="30px"), style="padding: 10px; margin: 0px;"))
       #tags$head(includeScript("ga-nwtapp.js"), includeScript("ga-allapps.js")),
     ),
     dashboardSidebar(
@@ -33,7 +34,7 @@ function(request){
       useShinyjs(),
       do.call(update_toastr_css, intro_css_args),
       
-      tags$head(tags$html(app_overlay(NULL, "snap_white.svg", "loading.png"))),
+      tags$head(tags$html(app_overlay(NULL, "res/snap_white.svg", "loading.png"))),
       tags$script("$(document).ready(function(){ $('#fade-wrapper').fadeIn(); });"),
       #actionButton("staticmap_btn", "Detailed map", style=action_btn_style, icon("globe")),
       sidebarMenu(
@@ -42,7 +43,7 @@ function(request){
         menuItem("Information", icon=icon("info-circle"), tabName="info")
       ),
       uiOutput("dataLoadedSidebar"),
-      dashboard_footer("http://snap.uaf.edu/", "snap_white.svg", "SNAP Dashboards")
+      dashboard_footer("http://snap.uaf.edu/", "res/snap_white.svg", "SNAP Dashboards")
     ),
     dashboardBody(
       tabItems(
@@ -162,7 +163,7 @@ function(request){
           about_app,
           h2("Frequently asked questions"),
           faq(faqs, bscollapse_args = list(id = "faq", open = "apps"), showcase_args = list(drop = "climdist")),
-          contactinfo(snap = "snap_fullcolor_400h.png", iarc = "iarc_375.jpg", uaf = "UAFLogo_A_286.png"), br()
+          contactinfo(snap = "res/snap_color.svg", iarc = "res/iarc.jpg", uaf = "res/uaf.png"), br()
         )
       )
     ),

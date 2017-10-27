@@ -388,17 +388,19 @@ This report was produced by SNAP's [Climate Analytics](https://uasnap.shinyapps.
 [Reporting template under development]
 
 ```{r logos_pdf, eval=is_pdf, out.height="100pt", fig.pos="h!b"}
-wd <- params$wd
-include_graphics(file.path(wd, "www/snap_fullcolor_400h.png"))
-include_graphics(file.path(wd, "www/iarc_375.jpg"))
-include_graphics(file.path(wd, "www/UAFLogo_A_286.png"))
+library(snaputils)
+x <- snap_res()
+include_graphics("C:/github/dash/snap_fullcolor_400h.png")
+include_graphics(file.path(x, "iarc.jpg"))
+include_graphics(file.path(x, "uaf.png"))
 ```
 
 ```{r logos_html, eval=!is_pdf, out.height="100pt", fig.pos="h!b"}
-wd <- params$wd
+library(snaputils)
+x <- snap_res()
 close_tag <- "' style='float:right;height:170px;margin-bottom:20px;' >"
-cat(paste0("<br/><img src='", file.path(wd, "www/UAFLogo_A_286.png"), close_tag, "\n",
-      "<img src='", file.path(wd, "www/iarc_375.jpg"), close_tag, "\n",
-      "<img src='", file.path(wd, "www/snap_fullcolor_400h.png"), close_tag))
+cat(paste0("<br/><img src='", file.path(x, "uaf.png"), close_tag, "\n",
+      "<img src='", file.path(x, "iarc.jpg"), close_tag, "\n",
+      "<img src='", file.path(x, "snap_color.svg"), close_tag))
 ```
 
