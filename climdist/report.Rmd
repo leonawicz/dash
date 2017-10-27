@@ -242,7 +242,7 @@ averaged over the period `r yrs[1]` - `r yrs[n]`.
 
 ```{r tab_overview_allyears}
 kable(x_regsea, caption=paste(yrs[1], "-", yrs[n], "statistical summary of", ifelse(nrow(x_regsea)==1, "the", ""), 
-                           "spatial", varname, ifelse(nrow(x_regsea)==1, "distribution.", "distributions.")),
+                           "spatial", lvarname, ifelse(nrow(x_regsea)==1, "distribution.", "distributions.")),
       digits=rnd)
 ```
 
@@ -256,7 +256,7 @@ In this case, there is no averaging over time and the distributional
 information pertains strictly to estimated probability densities across `r text_regions`.
 
 ```{r tab_overview_oneyear}
-kable(x_oneregsea, caption=paste(yrs[n], "spatial", varname, "statistical summary."), digits=rnd)
+kable(x_oneregsea, caption=paste(yrs[n], "spatial", lvarname, "statistical summary."), digits=rnd)
 ```
 
 Table 3 shows a similar overview of the data like shown in Table 1 but disaggregated by decade.
@@ -264,7 +264,7 @@ The `r dec_lev[1]` and `r dec_lev[length(dec_lev)]` are selected for brevity.
 
 ```{r tab_overview_decades}
 kable(x_decregsea, caption=paste(yrs[1], "-", yrs[n], "statistical summary of", ifelse(nrow(x_decregsea)==1, "the", ""), 
-                           "spatial", varname, ifelse(nrow(x_decregsea)==1, "distribution.", "distributions.")),
+                           "spatial", lvarname, ifelse(nrow(x_decregsea)==1, "distribution.", "distributions.")),
       digits=rnd)
 ```
 
@@ -288,6 +288,9 @@ kable(tabsann$annual, caption=paste(
   yrs[1], "-", yrs[n], "spatial", lvarname, ifelse(nrow_tabs[[1]]==1, "distribution.", "distributions.")),
   digits=rnd)
 ```
+
+Table 5 shows the minimum and maximum decadal means during the period, the greatest loss and gain between consecutive decades,
+and the overall change.
 
 ```{r tab_dec}
 kable(tabsdec$decadal, caption=paste("Summary of decadal change for the same period. 
