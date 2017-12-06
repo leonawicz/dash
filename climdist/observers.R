@@ -41,7 +41,7 @@ observe({
       if(is.null(input$rcps)) x <- "RCP selection missing"
       if(is.null(input$gcms)) x <- "GCM selection missing"
       if(is.null(input$regions)) 
-        x <- paste("No", tolower(mapset_labs()), "selected")
+        x <- paste(mapset_labs(), "not selected")
       if(is.null(input$seasons)) x <- "Season selection missing"
       if(is.null(x) && all(input$regions %in% rv$regions)){
         toastr_success(title="Data subset updated", success, timeOut=2500, preventDuplicates=TRUE)
