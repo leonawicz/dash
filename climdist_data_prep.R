@@ -61,44 +61,15 @@ locs$`TPA regions` <- c(
 )
 
 # Shapefiles
-library(rgdal)
-library(rgeos)
-library(maptools)
-shpDir <- "LowResFlatShapefiles"
-proj4 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
-
-# Full domain (Alaska / western Canada)
-akcan1_shp <- readOGR(file.path(shpDir, "Political/AK_CAN_PRISM_Extent.shp"), verbose = FALSE) %>% spTransform(proj4)
-# State/Province
-akcan2_shp <- readOGR(file.path(shpDir, "Political/AK_CAN.shp"), verbose = FALSE) %>% spTransform(proj4)
-akcan2_IDs <- c("Alaska", "Alberta", "Saskatchewan", "Manitoba", "Yukon Territory", "British Columbia")
-akcan2_shp <- subset(akcan2_shp, NAME %in% akcan2_IDs)
-# Alaska ecoregions
-eco3_shp <- readOGR(file.path(shpDir, "AK_Ecoregions/AK_Ecoregions_COMMONER.shp"), verbose = FALSE) %>% spTransform(proj4)
-eco2_shp <- readOGR(file.path(shpDir, "AK_Ecoregions/AK_Ecoregions_LEVEL2.shp"), verbose = FALSE) %>% spTransform(proj4)
-eco1_shp <- readOGR(file.path(shpDir, "AK_Ecoregions/AK_Ecoregions_LEVEL1.shp"), verbose = FALSE) %>% spTransform(proj4)
-# Alaska LCC regions
-aklcc_shp <- readOGR(file.path(shpDir, "LCC/LCC_regions.shp"), verbose = FALSE) %>% spTransform(proj4)
-# Alaska/Canada LCC regions
-lcc_shp <- readOGR(file.path(shpDir, "AKCAN_LCC/AKCAN_LCC_regions.shp"), verbose = FALSE) %>% spTransform(proj4)
-# CAVM regions
-CAVM_shp <- readOGR(file.path(shpDir, "CAVM/CAVM_complete.shp"), verbose = FALSE) %>% spTransform(proj4)
-# Alaska fire management zones
-FMZ_shp <- readOGR(file.path(shpDir, "FireMgmtZones/FireManagementZones_simplified.shp"), verbose = FALSE) %>% spTransform(proj4)
-# Terrestrail Protected Areas
-TPA_shp <- readOGR(file.path(shpDir, "NA_TPA/NA_TPA_simplified.shp"), verbose = FALSE) %>% spTransform(proj4)
-
-shp.list <- list(akcan1_shp, akcan2_shp, eco1_shp, eco2_shp, eco3_shp, aklcc_shp, lcc_shp, CAVM_shp, FMZ_shp, TPA_shp)
+library(maputils)
+shp.list <- list(akcan, akcan2, ecoreg1, ecoreg2, ecoreg3, aklcc, lcc, cavm, fmz, tpa)
 locs_areas <- map(seq_along(locs), ~shp.list[[.x]]@data$Shape_Area)
 names(locs_areas) <- names(shp.list) <- names(locs)
 
-#walk2(mapsets, list(akcan1_shp, akcan2_shp, eco1_shp, eco2_shp, eco3_shp, LCC_shp, LCC2_shp, CAVM_shp, FMZ_shp, TPA_shp),
-#      ~saveRDS(.y, file = paste0("climdist/appData/shp/", .x, ".rds")))
-
 locs2 <- locs
-locs2$`AK LCC regions` <- levels(aklcc_shp$NAME)[c(1,2,4,3,5)]
-locs2$`LCC regions`[1] <- gsub("-", "/", levels(lcc_shp$NAME)[1])
-locs2$`TPA regions` <- levels(TPA_shp$NAME)[c(8,1,2,3,7,4,5,6)]
+locs2$`AK LCC regions` <- levels(aklcc$NAME)[c(1, 2, 4, 3, 5)]
+locs2$`LCC regions`[1] <- gsub("-", "/", levels(lcc$NAME)[1])
+locs2$`TPA regions` <- levels(tpa$NAME)[c(8, 1, 2, 3, 7, 4, 5, 6)]
 
 # Additional constants used by app
 mapset_colIDs <- rep("NAME", 10)

@@ -7,6 +7,7 @@ library(shinydashboard)
 library(shinytoastr)
 
 library(apputils)
+library(maputils)
 library(snaputils)
 library(MASS) # rlm
 library(sp)
