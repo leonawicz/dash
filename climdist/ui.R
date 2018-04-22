@@ -27,7 +27,6 @@ function(request){
       tags$li(class="dropdown",
         tags$a(href="http://snap.uaf.edu", target="_blank",
           tags$img(src="res/snap_acronym_white.png", width="100%", height="30px"), style="padding: 10px; margin: 0px;"))
-      #tags$head(includeScript("ga-nwtapp.js"), includeScript("ga-allapps.js")),
     ),
     dashboardSidebar(
       use_apputils(TRUE, TRUE),
