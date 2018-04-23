@@ -161,7 +161,8 @@ function(request){
         tabItem(tabName="info",
           about_app,
           h2("Frequently asked questions"),
-          faq(faqs, bscollapse_args = list(id = "faq", open = "apps"), showcase_args = list(drop = "climdist")),
+          #faq(faqs, bscollapse_args = list(id = "faq", open = "apps"), showcase_args = list(drop = "climdist")),
+          faq(c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "factsheet_about"), bscollapse_args = list(id = "faq")),
           contactinfo(snap = "res/snap_color.svg", iarc = "res/iarc.jpg", uaf = "res/uaf.png"), br()
         )
       )

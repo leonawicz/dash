@@ -86,7 +86,7 @@ clropts <- c("Color by..." = "", "RCP", "Model", "Season", "Region") # available
 fctopts <- c("Facet by..." = "", "RCP", "Model", "Season", "Region")
 mergeopts <- c("Merge distributions..." = "", "RCPs" = "RCP", "GCMs" = "Model") # available variables for marginalizing over
 mergeopts_tooltip <- "Compute marginal distributions by marginalizing over levels of selected categorical variables."
-faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "factsheet_about", "apps") # FAQs to load from apputils
+faqs <- c("climdist_variables", "distributions", "fmz", "gcm", "rcp", "factsheet_about", "apps") # FAQs to load from snaputils
 intro_bg <- "https://s-media-cache-ak0.pinimg.com/originals/4a/95/21/4a9521be7331ee5a44073edbd8492fca.jpg"
 intro_css_args <- list(
   container = list(width = '70%', height = '700px'), 
